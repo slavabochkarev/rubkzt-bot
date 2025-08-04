@@ -301,8 +301,8 @@ async def kurskz_detail_almaty(update: Update, context: ContextTypes.DEFAULT_TYP
         entry = (
             f"🏦 {k['name']}\n"
             f"📍 {k['address']}\n"
-            f"💵 Покупка: {k['buy']}\n"
-            f"💴 Продажа: {k['sell']}\n\n"
+            f"{k['buy']} / {k['sell']}\n"
+            f"— — —"
         )
         if len(result_text) + len(entry) > MAX_LENGTH:
             break
@@ -364,8 +364,10 @@ def update_currency_data():
 
 async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        f"Данные ЦБ РФ и данные НБ РК\n"
-        f"и данные kurs.kz\n"
+        f"Данные ЦБ РФ с www.cbr-xml-daily.ru \n"
+        f"Данные НБ РК с nationalbank.kz \n"
+        f"И данные обменников kurs.kz\n\n\n"        
+        f"Обратная связь - @SlavaBochkarev\n"
     )
 
 async def setup_bot_commands(application):
