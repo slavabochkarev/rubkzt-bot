@@ -134,12 +134,15 @@ def get_kurskz_rub_buy_sell_almaty():
         for punkt in punkts:
             name = punkt.get("name", "")
             rub = punkt.get("data", {}).get("RUB")
-
-            # ✅ Фильтрация только по name, содержащему "МиГ" (без учёта регистра)
-            if   ("exchange" in name.lower() or name.lower() == "миг 1")
-                and rub 
-                and isinstance(rub, list) 
-                and len(rub) >= 2 and rub[0] > 0 and rub[1] > 0:
+            name_lc = name.lower()            
+            if (
+                ("exchange" in name_lc or name_lc == "миг 1")
+                and rub
+                and isinstance(rub, list)
+                and len(rub) >= 2
+                and rub[0] > 0
+                and rub[1] > 0
+            ):
                 result.append({
                     "name": name,
                     "address": punkt.get("mainaddress", "—"),
