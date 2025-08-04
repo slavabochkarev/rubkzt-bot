@@ -125,16 +125,19 @@ def get_kurskz_rub_buy_sell_almaty():
 
         match = re.search(r"var punkts = (\[.*?\]);", response.text, re.DOTALL)
         if not match:
-            return []
+            return "Данные не найдены."
 
         punkts_json = match.group(1)
         punkts = json.loads(punkts_json)
 
-        result = []
+        MAX_LENGTH = 4000
+        result_text = ""
+
         for punkt in punkts:
             name = punkt.get("name", "")
             rub = punkt.get("data", {}).get("RUB")
-            name_lc = name.lower()            
+            name_lc = name.lower()
+
             if (
                 ("exchange" in name_lc or name_lc == "миг 1")
                 and rub
@@ -143,18 +146,21 @@ def get_kurskz_rub_buy_sell_almaty():
                 and rub[0] > 0
                 and rub[1] > 0
             ):
-                result.append({
-                    "name": name,
-                    "address": punkt.get("mainaddress", "—"),
-                    "buy": rub[0],
-                    "sell": rub[1],
-                })
+                entry = (
+                    f"{name}\n"
+                    f"{punkt.get('mainaddress', '—')}\n"
+                    f"Покупка: {rub[0]}\n"
+                    f"Продажа: {rub[1]}\n\n"
+                )
+                if len(result_text) + len(entry) > MAX_LENGTH:
+                    break
+                result_text += entry
 
-        return result
+        return result_text if result_text else "Нет подходящих данных."
 
     except Exception as e:
         print("Ошибка при получении данных с kurs.kz:", e)
-        return []
+        return "Произошла ошибка при получении данных."
 
 def get_flag(code):
     """Возвращает эмодзи-флаг по коду страны (например 'US' → 🇺🇸)."""
