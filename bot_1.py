@@ -136,7 +136,10 @@ def get_kurskz_rub_buy_sell_almaty():
             rub = punkt.get("data", {}).get("RUB")
 
             # ✅ Фильтрация только по name, содержащему "МиГ" (без учёта регистра)
-            if "миг" in name.lower() and rub and isinstance(rub, list) and len(rub) >= 2 and rub[0] > 0 and rub[1] > 0:
+            if   ("exchange" in name.lower() or name.lower() == "миг 1")
+                and rub 
+                and isinstance(rub, list) 
+                and len(rub) >= 2 and rub[0] > 0 and rub[1] > 0:
                 result.append({
                     "name": name,
                     "address": punkt.get("mainaddress", "—"),
@@ -418,4 +421,5 @@ async def main():
 if __name__ == "__main__":
     import nest_asyncio
     nest_asyncio.apply()
+
     asyncio.run(main())
