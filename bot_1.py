@@ -287,7 +287,7 @@ async def kurskz_oral(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
          await update.message.reply_text("Не удалось получить данные об обменниках.")
          
-async def kurskz_almaty(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def kurskz_detail_almaty(update: Update, context: ContextTypes.DEFAULT_TYPE):
     kurs_list = get_kurskz_rub_buy_sell_almaty()
 
     if not kurs_list:
