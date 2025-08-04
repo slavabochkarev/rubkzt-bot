@@ -125,43 +125,32 @@ def get_kurskz_rub_buy_sell_almaty():
 
         match = re.search(r"var punkts = (\[.*?\]);", response.text, re.DOTALL)
         if not match:
-            return "Данные не найдены."
+            return []
 
-        punkts_json = match.group(1)
-        punkts = json.loads(punkts_json)
+        punkts = json.loads(match.group(1))
 
-        MAX_LENGTH = 4000
-        result_text = ""
-
+        result = []
         for punkt in punkts:
             name = punkt.get("name", "")
             rub = punkt.get("data", {}).get("RUB")
             name_lc = name.lower()
-
             if (
                 ("exchange" in name_lc or name_lc == "миг 1")
-                and rub
-                and isinstance(rub, list)
-                and len(rub) >= 2
-                and rub[0] > 0
-                and rub[1] > 0
+                and rub and isinstance(rub, list)
+                and len(rub) >= 2 and rub[0] > 0 and rub[1] > 0
             ):
-                entry = (
-                    f"{name}\n"
-                    f"{punkt.get('mainaddress', '—')}\n"
-                    f"Покупка: {rub[0]}\n"
-                    f"Продажа: {rub[1]}\n\n"
-                )
-                if len(result_text) + len(entry) > MAX_LENGTH:
-                    break
-                result_text += entry
-
-        return result_text if result_text else "Нет подходящих данных."
+                result.append({
+                    "name": name,
+                    "address": punkt.get("mainaddress", "—"),
+                    "buy": rub[0],
+                    "sell": rub[1],
+                })
+        return result
 
     except Exception as e:
         print("Ошибка при получении данных с kurs.kz:", e)
-        return "Произошла ошибка при получении данных."
-
+        return []
+        
 def get_flag(code):
     """Возвращает эмодзи-флаг по коду страны (например 'US' → 🇺🇸)."""
     if code == "EU":
@@ -298,23 +287,28 @@ async def kurskz_oral(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
          await update.message.reply_text("Не удалось получить данные об обменниках.")
          
-async def kurskz_detail_almaty(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def kurskz_almaty(update: Update, context: ContextTypes.DEFAULT_TYPE):
     kurs_list = get_kurskz_rub_buy_sell_almaty()
-    if kurs_list:
-         messages = []
-         for kurs in kurs_list:
-             messages.append(
-                 f"🏦 <b>{kurs['name']}</b>\n"
-                 f"📍 {kurs['address']}\n"
-                 f"🔻 Покупка: {kurs['buy']} ₸\n"
-                 f"🔺 Продажа: {kurs['sell']} ₸\n"
-                 f"— — —"
-             )
-         full_message = "\n".join(messages)
-         await update.message.reply_text(full_message, parse_mode="HTML")
-    else:
-         await update.message.reply_text("Не удалось получить данные об обменниках.")
 
+    if not kurs_list:
+        await update.message.reply_text("Нет подходящих данных.")
+        return
+
+    MAX_LENGTH = 4000
+    result_text = ""
+
+    for k in kurs_list:
+        entry = (
+            f"🏦 {k['name']}\n"
+            f"📍 {k['address']}\n"
+            f"💵 Покупка: {k['buy']}\n"
+            f"💴 Продажа: {k['sell']}\n\n"
+        )
+        if len(result_text) + len(entry) > MAX_LENGTH:
+            break
+        result_text += entry
+
+    await update.message.reply_text(result_text)
          
 async def kurskz(update: Update, context: ContextTypes.DEFAULT_TYPE):
     data = get_kurskz_rub_buy_sell_avg()
