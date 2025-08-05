@@ -12,6 +12,7 @@ import xml.etree.ElementTree as ET
 from telegram import BotCommand, MenuButtonCommands
 from dotenv import load_dotenv
 import os
+from handlers.converter import try_convert_amount
 
 # Глобальный кэш
 cached_data = None
@@ -265,10 +266,16 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif "обменники уральска" in text:
         await kurskz_oral(update, context)
     elif "обменники алматы" in text:
-        await kurskz_detail_almaty(update, context)        
+        await kurskz_detail_almaty(update, context)
     elif "📊 курсы rub/kzt" in text:
-        await rub_kzt_all(update, context)        
+        await rub_kzt_all(update, context)
     else:
+        data = get_currency_data()
+        if data:
+            result = try_convert_amount(update.message.text, data)
+            if result:
+                await update.message.reply_text(result)
+                return
         await update.message.reply_text("Не понимаю. Используй кнопки или команды.")
 
 async def kurskz_oral(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -303,7 +310,7 @@ async def kurskz_detail_almaty(update: Update, context: ContextTypes.DEFAULT_TYP
             f"🏦 {k['name']}\n"
             f"📍 {k['address']}\n"
             f"{k['buy']} / {k['sell']}\n"
-            f"— — —"
+            f"— — —\n"
         )
         if len(result_text) + len(entry) > MAX_LENGTH:
             break
@@ -394,16 +401,17 @@ async def post_init(application):
     print("🤖 Бот запущен")
     
 async def main():
-    update_currency_data() 
-    
+    update_currency_data()
+
     load_dotenv()
     TOKEN = os.getenv("TOKEN")
     if not TOKEN:
         raise ValueError("TOKEN не найден в переменных окружения")
+
     app = ApplicationBuilder().token(TOKEN).build()
 
     await setup_bot_commands(app)
-    
+
     # 👇 Хендлеры
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("usd", usd))
@@ -418,15 +426,13 @@ async def main():
     app.add_handler(CommandHandler("nbrk", rub_nbrk))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
 
-    # 🕒 Запускаем фоновую задачу обновления каждые 60 минут
+    # 🕒 Обновление курса каждый час
     app.job_queue.run_repeating(update_currency_data_job, interval=3600, first=0)
-    
     print("🤖 Бот запущен")
     await app.run_polling()
 
-if __name__ == "__main__":
 
-    nest_asyncio.apply()
-    asyncio.get_event_loop().run_until_complete(main())
-    
+#if __name__ == "__main__":
+    #nest_asyncio.apply()
+    #asyncio.get_event_loop().run_until_complete(main())   
 #asyncio.run(main())
