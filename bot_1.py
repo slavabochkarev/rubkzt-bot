@@ -20,6 +20,7 @@ import threading
 cached_data = None
 last_updated = None
 CACHE_TTL = datetime.timedelta(hours=1)  # Время жизни кэша: 1 час
+avg_sell_global = None  
 
 def get_nbrk_rub():
     url = "https://nationalbank.kz/rss/rates_all.xml"
@@ -321,11 +322,14 @@ async def kurskz_detail_almaty(update: Update, context: ContextTypes.DEFAULT_TYP
     await update.message.reply_text(result_text)
          
 async def kurskz(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    global avg_sell_global 
     data = get_kurskz_rub_buy_sell_avg()
     if not data:
         await update.message.reply_text("Не удалось получить данные об обменниках.")
         return
-
+    # Обновляем глобальную переменную
+    avg_sell_global = data['avg_sell']
+    
     message = (
         f"📊 <b>Средний курс RUB по {data['count']} обменникам Уральска:</b>\n"
         f"💰 Покупка: <b>{data['avg_buy']:.2f}</b> ₸\n"
@@ -360,6 +364,9 @@ async def rub_nbrk(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def get_currency_data():
     return cached_data
 
+def get_kursz_data():
+    return avg_sell_global
+
 # 🔄 Функция обновления кеша курсов
 def update_currency_data():
     global cached_data, last_updated
@@ -368,10 +375,22 @@ def update_currency_data():
         response.raise_for_status()
         cached_data = response.json()
         last_updated = datetime.datetime.now()
+        
         print(f"🔁 Данные обновлены из сети: {last_updated}")
     except Exception as e:
         print("❌ Ошибка при обновлении курса:", e)
-
+        
+    # Пытаемся обновить средний курс обменников (kurs.kz)
+    try:
+        kurs_data = get_kurskz_rub_buy_sell_avg()  # должна возвращать dict с avg_buy/avg_sell/count
+        if kurs_data and "avg_sell" in kurs_data:
+            avg_sell_global = kurs_data["avg_sell"]
+            print(f"🔁 avg_sell_global обновлён: {avg_sell_global}")
+        else:
+            print("⚠️ Не удалось получить avg_sell из kurs.kz (пустой ответ).")
+    except Exception as e:
+        print("❌ Ошибка при получении данных с kurs.kz:", e)
+        
 async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         f"Данные ЦБ РФ с www.cbr-xml-daily.ru \n"
