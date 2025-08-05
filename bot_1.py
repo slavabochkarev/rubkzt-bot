@@ -13,6 +13,8 @@ from telegram import BotCommand, MenuButtonCommands
 from dotenv import load_dotenv
 import os
 from handlers.converter import try_convert_amount
+from flask import Flask
+import threading
 
 # Глобальный кэш
 cached_data = None
@@ -374,8 +376,9 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         f"Данные ЦБ РФ с www.cbr-xml-daily.ru \n"
         f"Данные НБ РК с nationalbank.kz \n"
-        f"И данные обменников kurs.kz\n\n\n"        
-        f"Обратная связь - @SlavaBochkarev\n"
+        f"И данные обменников kurs.kz\n\n"
+        f"Введите сумму и код валюты — и вы получите пересчёт по официальному курсу ЦБ РФ\n\n\n"
+        f"💬 Обратная связь — @SlavaBochkarev\n"
     )
 
 async def setup_bot_commands(application):
@@ -399,6 +402,14 @@ async def update_currency_data_job(context: ContextTypes.DEFAULT_TYPE):
            
 async def post_init(application):
     print("🤖 Бот запущен")
+    
+@flask_app.route('/')
+def index():
+    return "🤖 Telegram bot is running"
+
+def run_flask():
+    port = int(os.environ.get("PORT", 10000))
+    flask_app.run(host="0.0.0.0", port=port)
     
 async def main():
     update_currency_data()
@@ -433,8 +444,11 @@ async def main():
 
 if __name__ == "__main__":
     nest_asyncio.apply()    
+    # Фейковый веб-сервер для Render
+    threading.Thread(target=run_flask).start()
     try:
         asyncio.run(main())
     except RuntimeError as e:
         if "cannot close a running event loop" not in str(e).lower():
             raise
+    
