@@ -437,9 +437,4 @@ if __name__ == "__main__":
         asyncio.run(main())
     except RuntimeError as e:
         if "cannot close a running event loop" not in str(e).lower():
-        raise
-    
-#if __name__ == "__main__":
-    #nest_asyncio.apply()
-    #asyncio.get_event_loop().run_until_complete(main())   
-#asyncio.run(main())
+            raise
