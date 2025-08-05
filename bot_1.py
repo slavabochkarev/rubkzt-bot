@@ -402,7 +402,10 @@ async def update_currency_data_job(context: ContextTypes.DEFAULT_TYPE):
            
 async def post_init(application):
     print("🤖 Бот запущен")
-    
+
+# 👇 создаём фейковый Flask-сервер
+flask_app = Flask(__name__)
+
 @flask_app.route('/')
 def index():
     return "🤖 Telegram bot is running"
