@@ -9,22 +9,24 @@ def try_convert_amount(message: str, data: dict) -> str | None:
         amount = float(amount_str.replace(",", "."))
         currency_code = currency_code.upper()
 
+        # Проверка наличия валюты
         if currency_code not in data["Valute"]:
             return f"❌ Валюта '{currency_code}' не найдена в данных ЦБ РФ."
 
-        if "KZT" in data["Valute"]:
-            rate = 1 / (data["Valute"]["KZT"]["Value"] / data["Valute"]["KZT"]["Nominal"])
-            converted = round(amount / rate, 2)
-        elif currency_code in data["Valute"]:
-            # Любая другая валюта
-            nominal = data["Valute"][currency_code]["Nominal"]
-            rate = data["Valute"][currency_code]["Value"] / nominal
-            converted = round(amount * rate, 2)
-        else:
-            return f"❌ Валюта '{currency_code}' не найдена в данных ЦБ РФ."
-                       
-        name = data["Valute"][currency_code]["Name"]
+        valute = data["Valute"][currency_code]
+        nominal = valute["Nominal"]
+        value = valute["Value"]
+        name = valute["Name"]
 
-        return f"💰 {amount} {currency_code} ({name}) × {rate} = {converted} RUB"
+        # Если пользователь вводит KZT — пересчитываем как "обратный курс"
+        if currency_code == "KZT":
+            rate = value / nominal
+            converted = round(amount / rate, 2)
+            return f"💰 {amount} {currency_code} ({name}) / {rate:.4f} = {converted} RUB"
+        else:
+            rate = value / nominal
+            converted = round(amount * rate, 2)
+            return f"💰 {amount} {currency_code} ({name}) × {rate:.4f} = {converted} RUB"
+
     except Exception:
         return None
