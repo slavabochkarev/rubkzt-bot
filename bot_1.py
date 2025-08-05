@@ -263,7 +263,7 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     #if "usd" in text:
         #await usd(update, context)
-    elif "обменники уральска" in text:
+    if "обменники уральска" in text:
         await kurskz_oral(update, context)
     elif "обменники алматы" in text:
         await kurskz_detail_almaty(update, context)
