@@ -1,0 +1,9 @@
+services:
+  - type: worker
+    name: telegram-bot
+    env: python
+    buildCommand: ""
+    startCommand: python bot_1.py
+    region: oregon  # или frankfurt, если ты в Европе
+    runtime: python
+    plan: free
