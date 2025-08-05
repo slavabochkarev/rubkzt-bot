@@ -1,7 +1,7 @@
 services:
-  - type: worker
+  - type: web
     name: telegram-bot
-    runtime: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: python bot_1.py
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python bot_1.py"
     autoDeploy: true
