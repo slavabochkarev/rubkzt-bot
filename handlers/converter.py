@@ -20,9 +20,15 @@ def try_convert_amount(message: str, data: dict) -> str | None:
 
         # Если пользователь вводит KZT — пересчитываем как "обратный курс"
         if currency_code == "KZT":
-            rate = value / nominal
-            converted = round(amount / rate, 2)
-            return f"💰 {amount} {currency_code} ({name}) / {rate:.4f} = {converted} RUB"
+            valute = data["Valute"]["KZT"]
+            nominal = valute["Nominal"]
+            value = valute["Value"]
+            rub_per_1_kzt = value / nominal
+            kzt_per_1_rub = 1 / rub_per_1_kzt
+            
+            #rate = value / nominal
+            converted = round(amount / kzt_per_1_rub, 2)
+            return f"💰 {amount} {currency_code} ({name}) / {kzt_per_1_rub:.4f} = {converted} RUB"
         else:
             rate = value / nominal
             converted = round(amount * rate, 2)
