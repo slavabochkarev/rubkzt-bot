@@ -399,7 +399,22 @@ async def setup_bot_commands(application):
 # 🕒 Задача для JobQueue
 async def update_currency_data_job(context: ContextTypes.DEFAULT_TYPE):
     update_currency_data()
-           
+    
+# URL для автопинга — лучше задать как переменную окружения в Render (PING_URL),
+# иначе используется дефолт.
+PING_URL = os.environ.get("PING_URL", "https://rubkzt-bot.onrender.com/")
+
+async def ping_self(context: "ContextTypes.DEFAULT_TYPE"):
+    """Пытаемся пинговать сам сайт, чтобы Render не засыпал (вызывается из JobQueue)."""
+    try:
+        # Выполняем blocking-запрос в ThreadPool, чтобы не блокировать loop
+        await asyncio.to_thread(requests.get, PING_URL, {"timeout": 10})
+        # если нужно логировать:
+        # print(f"Pinged {PING_URL}")
+    except Exception as e:
+        # Не падаем на ошибках пинга — просто залогировать
+        print("Ошибка автопинга:", e)        
+    
 async def post_init(application):
     print("🤖 Бот запущен")
 
@@ -443,6 +458,10 @@ async def main():
     # 🕒 Обновление курса каждый час
     app.job_queue.run_repeating(update_currency_data_job, interval=3600, first=0)
     print("🤖 Бот запущен")
+    # 🔔 Автопинг сайта каждые 10 минут, чтобы Render не засыпал
+    # первый пинг через 60 секунд (чтобы контейнер успел подняться)
+    app.job_queue.run_repeating(ping_self, interval=600, first=60)
+    
     await app.run_polling()
 
 if __name__ == "__main__":
