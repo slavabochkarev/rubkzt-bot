@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 import re
 import json
 import asyncio
+import nest_asyncio
 import xml.etree.ElementTree as ET
 from telegram import BotCommand, MenuButtonCommands
 from dotenv import load_dotenv
@@ -280,7 +281,7 @@ async def kurskz_oral(update: Update, context: ContextTypes.DEFAULT_TYPE):
                  f"📍 {kurs['address']}\n"
                  f"🔻 Покупка: {kurs['buy']} ₸\n"
                  f"🔺 Продажа: {kurs['sell']} ₸\n"
-                 f"— — —"
+                 f"— — —\n"
              )
          full_message = "\n".join(messages)
          await update.message.reply_text(full_message, parse_mode="HTML")
@@ -424,7 +425,8 @@ async def main():
     await app.run_polling()
 
 if __name__ == "__main__":
-    import nest_asyncio
-    nest_asyncio.apply()
 
-    asyncio.run(main())
+    nest_asyncio.apply()
+    asyncio.get_event_loop().run_until_complete(main())
+    
+#asyncio.run(main())
