@@ -14,13 +14,16 @@ def try_convert_amount(message: str, data: dict) -> str | None:
 
         if "KZT" in data["Valute"]:
             rate = 1 / (data["Valute"]["KZT"]["Value"] / data["Valute"]["KZT"]["Nominal"])
+            converted = round(amount / rate, 2)
+        elif currency_code in data["Valute"]:
+            # Любая другая валюта
+            nominal = data["Valute"][currency_code]["Nominal"]
+            rate = data["Valute"][currency_code]["Value"] / nominal
+            converted = round(amount * rate, 2)
         else:
-            rate = data["Valute"][currency_code]["Value"]
-            
-            
-        converted = round(amount * rate, 2)
+            return f"❌ Валюта '{currency_code}' не найдена в данных ЦБ РФ."
+                       
         name = data["Valute"][currency_code]["Name"]
-
 
         return f"💰 {amount} {currency_code} ({name}) × {rate} = {converted} RUB"
     except Exception:
