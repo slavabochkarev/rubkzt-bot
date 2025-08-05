@@ -36,8 +36,9 @@ def try_convert_amount(message: str, data: dict) -> str | None:
             if local_rate and local_rate > 0:
                 converted_local = round(amount / local_rate, 2)
                 line_local = f"💰 {amount} {currency_code} ({name}) / {local_rate:.4f} = {converted_local} RUB"
-            
-            return f"{line_cb}\n{line_local}"            
+                return f"{line_cb}\n{line_local}"
+            else:
+                return line_cb
         else:
             rate = value / nominal
             converted = round(amount * rate, 2)
