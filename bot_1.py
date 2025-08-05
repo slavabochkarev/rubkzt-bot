@@ -261,8 +261,8 @@ async def rub_kzt_all(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.lower()
 
-    if "usd" in text:
-        await usd(update, context)
+    #if "usd" in text:
+        #await usd(update, context)
     elif "обменники уральска" in text:
         await kurskz_oral(update, context)
     elif "обменники алматы" in text:
@@ -432,7 +432,14 @@ async def main():
     await app.run_polling()
 
 if __name__ == "__main__":
-    nest_asyncio.apply()
-    asyncio.run(main())
-
+    nest_asyncio.apply()    
+    try:
+        asyncio.run(main())
+    except RuntimeError as e:
+        if "cannot close a running event loop" not in str(e).lower():
+        raise
+    
+#if __name__ == "__main__":
+    #nest_asyncio.apply()
+    #asyncio.get_event_loop().run_until_complete(main())   
 #asyncio.run(main())
