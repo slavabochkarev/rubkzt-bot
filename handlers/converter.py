@@ -25,11 +25,11 @@ def try_convert_amount(message: str, data: dict) -> str | None:
             except Exception:
                 local_rate = None
                 
-           if local_rate is not None:
-                try:
-                    local_rate_num = float(local_rate)
-                except Exception:
-                    local_rate_num = None    
+         if local_rate is not None:
+            try:
+                local_rate_num = float(local_rate)
+            except Exception:
+                local_rate_num = None    
                 
             valute = data["Valute"]["KZT"]
             nominal = valute["Nominal"]
