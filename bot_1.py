@@ -15,7 +15,7 @@ import os
 from handlers.converter import try_convert_amount
 from flask import Flask
 import threading
-import globals_store
+from handlers import globals_store
 
 # Глобальный кэш
 cached_data = None
@@ -497,3 +497,4 @@ if __name__ == "__main__":
         if "cannot close a running event loop" not in str(e).lower():
             raise
     
+
