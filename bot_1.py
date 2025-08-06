@@ -70,14 +70,16 @@ def try_convert_amount(message: str, data: dict) -> str | None:
                 kzt_per_1_rub = 1 / rub_per_1_kzt
 
                 converted_cb = round(amount / kzt_per_1_rub, 2)
-                lines.append(f"По курсу ЦБ РФ: {amount} KZT / {kzt_per_1_rub:.4f} = {converted_cb} RUB")
+                #lines.append(f"По курсу ЦБ РФ: {amount} KZT / {kzt_per_1_rub:.4f} = {converted_cb} RUB")
+                lines.append(f"По курсу ЦБ РФ: {converted_cb} ({kzt_per_1_rub:.4f})")
             else:
                 print("[DEBUG] data has no Valute['KZT']")
 
             # Добавляем локальную строку, если локальный курс валиден
             if local_rate_num is not None and local_rate_num > 0:
                 converted_local = round(amount / local_rate_num, 2)
-                lines.append(f"По обмен курсу: {amount} KZT / {local_rate_num:.4f} = {converted_local} RUB")
+                #lines.append(f"По обмен курсу: {amount} KZT / {local_rate_num:.4f} = {converted_local} RUB")
+                lines.append(f"По обмен курсу: {converted_local} ({local_rate_num:.4f})")                
                 diff = converted_cb - converted_local
                 lines.append(f"Разница: <b>{diff:.2f}</b>\n")
                 
