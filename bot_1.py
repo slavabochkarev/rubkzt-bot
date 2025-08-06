@@ -70,21 +70,20 @@ def try_convert_amount(message: str, data: dict) -> str | None:
                 kzt_per_1_rub = 1 / rub_per_1_kzt
 
                 converted_cb = round(amount / kzt_per_1_rub, 2)
-                lines.append(f"По курсу ЦБ РФ {amount} KZT / {kzt_per_1_rub:.4f} = {converted_cb} RUB")
+                lines.append(f"По курсу ЦБ РФ: {amount} KZT / {kzt_per_1_rub:.4f} = {converted_cb} RUB")
             else:
                 print("[DEBUG] data has no Valute['KZT']")
 
             # Добавляем локальную строку, если локальный курс валиден
             if local_rate_num is not None and local_rate_num > 0:
                 converted_local = round(amount / local_rate_num, 2)
-                lines.append(f"По обмен курсу {amount} KZT / {local_rate_num:.4f} = {converted_local} RUB")
+                lines.append(f"По обмен курсу: {amount} KZT / {local_rate_num:.4f} = {converted_local} RUB")
                 diff = converted_cb - converted_local
                 lines.append(f"Разница: <b>{diff:.2f}</b>\n")
                 
             if lines:
                 # соединяем все доступные строки — может быть 1 или 2
                 result = "\n".join(lines)
-                print("[DEBUG] returning KZT result:", result.replace("\n", " | "))
                 return result
             else:
                 return "❌ Нет данных по KZT в данных ЦБ РФ и локальный курс недоступен."
@@ -344,14 +343,6 @@ async def rub_kzt_all(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.lower()
 
-    try:
-        raw_text = update.message.text
-    except Exception as e:
-        print("[DEBUG] echo called but update.message.text missing:", e)
-        return
-
-    print("[DEBUG] echo called, raw_text:", repr(raw_text))
-
     if "обменники уральска" in text:
         await kurskz_oral(update, context)
     elif "обменники алматы" in text:
@@ -363,7 +354,7 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if data:
             result = try_convert_amount(update.message.text, data)
             if result:
-                await update.message.reply_text(result)
+                await update.message.reply_text(result, parse_mode="HTML")
                 return
         await update.message.reply_text("Не понимаю. Используй кнопки или команды.")
 
