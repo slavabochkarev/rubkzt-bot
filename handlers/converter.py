@@ -10,7 +10,7 @@ def try_convert_amount(message: str, data: dict) -> str | None:
         currency_code = currency_code.upper()
 
         # Проверка наличия валюты
-        if currency_code not in data["Valute"]:
+        if currency_code not in data["Valute"] or currency_code in ("KZT", "KZ", "КЗ"):
             return f"❌ Валюта '{currency_code}' не найдена в данных ЦБ РФ."
 
         valute = data["Valute"][currency_code]
@@ -21,7 +21,7 @@ def try_convert_amount(message: str, data: dict) -> str | None:
         # Если пользователь вводит KZT — пересчитываем как "обратный курс"
         if currency_code.lower() in ("kzt", "kz", "кз"):
             try:
-                local_rate = get_kursz_data()  # ожидаем, что это число: KZT за 1 RUB или наоборот - см. ниже
+                local_rate = get_kursz_data()  
             except Exception:
                 local_rate = None
                 
