@@ -332,6 +332,10 @@ async def kurskz(update: Update, context: ContextTypes.DEFAULT_TYPE):
         globals_store.avg_sell_global = float(data['avg_sell'])
     except Exception:
         globals_store.avg_sell_global = None
+        
+    print("[DEBUG] assigned globals_store.avg_sell_global =", globals_store.avg_sell_global)
+    print("[DEBUG] globals_store module file:", getattr(globals_store, "__file__", None))
+    print("[DEBUG] id(globals_store) =", id(globals_store))    
     
     message = (
         f"📊 <b>Средний курс RUB по {data['count']} обменникам Уральска:</b>\n"
@@ -497,4 +501,3 @@ if __name__ == "__main__":
         if "cannot close a running event loop" not in str(e).lower():
             raise
     
-
