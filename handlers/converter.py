@@ -8,7 +8,7 @@ def try_convert_amount(message: str, data: dict) -> str | None:
         amount_str, currency_code = parts
         amount = float(amount_str.replace(",", "."))
         currency_code = currency_code.upper()
-
+        print("[DEBUG] start try_convert_amount")
         # Проверка наличия валюты
         if currency_code not in data["Valute"] and currency_code not in ("KZT", "KZ", "КЗ", "ЛЯ"):
             return f"❌ Валюта '{currency_code}' не найдена в данных ЦБ РФ."
