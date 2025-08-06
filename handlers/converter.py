@@ -19,7 +19,7 @@ def try_convert_amount(message: str, data: dict) -> str | None:
         name = valute["Name"]
 
         # Если пользователь вводит KZT — пересчитываем как "обратный курс"
-        if currency_code == "KZT":
+        if currency_code.lower() in ("kzt", "kz", "кз"):
             try:
                 local_rate = get_kursz_data()  # ожидаем, что это число: KZT за 1 RUB или наоборот - см. ниже
             except Exception:
@@ -35,14 +35,14 @@ def try_convert_amount(message: str, data: dict) -> str | None:
             line_cb = f"💰 {amount} {currency_code} ({name}) / {kzt_per_1_rub:.4f} = {converted} RUB"
             if local_rate and local_rate > 0:
                 converted_local = round(amount / local_rate, 2)
-                line_local = f"💰 {amount} {currency_code} ({name}) / {local_rate:.4f} = {converted_local} RUB"
+                line_local = f"💰 {amount} {currency_code} / {local_rate:.4f} = {converted_local} RUB"
                 return f"{line_cb}\n{line_local}"
             else:
                 return line_cb
         else:
             rate = value / nominal
             converted = round(amount * rate, 2)
-            return f"💰 {amount} {currency_code} ({name}) × {rate:.4f} = {converted} RUB"
+            return f"💰 {amount} {currency_code} × {rate:.4f} = {converted} RUB"
 
     except Exception:
         return None
