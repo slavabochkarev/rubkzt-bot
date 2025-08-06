@@ -392,8 +392,12 @@ def update_currency_data():
     try:
         kurs_data = get_kurskz_rub_buy_sell_avg()  # должна возвращать dict с avg_buy/avg_sell/count
         if kurs_data and "avg_sell" in kurs_data:
-            avg_sell_global = kurs_data["avg_sell"]
-            print(f"🔁 avg_sell_global обновлён: {avg_sell_global}")
+            try:
+                globals_store.avg_sell_global = float(data['avg_sell'])
+            except Exception:
+                globals_store.avg_sell_global = None
+                
+            print(f"🔁 avg_sell_global обновлён: {globals_store.avg_sell_global}")
         else:
             print("⚠️ Не удалось получить avg_sell из kurs.kz (пустой ответ).")
     except Exception as e:
