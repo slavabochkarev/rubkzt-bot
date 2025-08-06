@@ -365,6 +365,8 @@ def get_currency_data():
     return cached_data
 
 def get_kursz_data():
+    global avg_sell_global
+    print(f"🔁 avg_sell_global получен: {avg_sell_global}")
     return avg_sell_global
 
 # 🔄 Функция обновления кеша курсов
