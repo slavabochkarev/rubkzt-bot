@@ -53,7 +53,7 @@ def try_convert_amount(message: str, data: dict) -> str | None:
             except Exception as e:
                 print("[DEBUG] get_kursz_data() raised:", e)
                 local_rate = None
-            
+
             # Пытаемся привести к числу
             try:
                 local_rate_num = float(local_rate) if local_rate is not None else None
@@ -63,31 +63,33 @@ def try_convert_amount(message: str, data: dict) -> str | None:
 
             # Берём данные ЦБ по KZT; если их нет — корректно обработаем
             kzt_valute = data.get("Valute", {}).get("KZT")
-            if not kzt_valute:
+            lines = []
+
+            if kzt_valute:
+                nominal = kzt_valute["Nominal"]
+                value = kzt_valute["Value"]
+                rub_per_1_kzt = value / nominal
+                kzt_per_1_rub = 1 / rub_per_1_kzt
+
+                converted_cb = round(amount / kzt_per_1_rub, 2)
+                lines.append(f"По курсу ЦБ   {amount} KZT / {kzt_per_1_rub:.4f} = {converted_cb} RUB")
+            else:
                 print("[DEBUG] data has no Valute['KZT']")
-                if local_rate_num is not None and local_rate_num > 0:
-                    converted_local = round(amount / local_rate_num, 2)
-                    line_local = f"🔁 По обменному курсу {amount} KZT / {local_rate_num:.4f} = {converted_local} RUB"
-                    return line_local
-                return "❌ Нет данных по KZT в данных ЦБ РФ и локальный курс недоступен."
 
-            nominal = kzt_valute["Nominal"]
-            value = kzt_valute["Value"]
-            rub_per_1_kzt = value / nominal
-            kzt_per_1_rub = 1 / rub_per_1_kzt
-            currency_code = "KZT"
-
-            converted_cb = round(amount / kzt_per_1_rub, 2)
-            line_cb = f"💰 По курсу ЦБ {amount} {currency_code} / {kzt_per_1_rub:.4f} = {converted_cb} RUB"
-
+            # Добавляем локальную строку, если локальный курс валиден
             if local_rate_num is not None and local_rate_num > 0:
                 converted_local = round(amount / local_rate_num, 2)
-                line_local = f"🔁 По обменному курсу {amount} {currency_code} / {local_rate_num:.4f} = {converted_local} RUB"
-                print("[DEBUG] returning CB + local")
-                return f"{line_cb}\n{line_local}"
+                lines.append(f"По обменникам {amount} KZT / {local_rate_num:.4f} = {converted_local} RUB")
+                diff = converted_cb - converted_local
+                lines.append(f"Разница: {diff}\n")
+                
+            if lines:
+                # соединяем все доступные строки — может быть 1 или 2
+                result = "\n".join(lines)
+                print("[DEBUG] returning KZT result:", result.replace("\n", " | "))
+                return result
             else:
-                print("[DEBUG] returning CB only")
-                return line_cb
+                return "❌ Нет данных по KZT в данных ЦБ РФ и локальный курс недоступен."
 
         # Общий случай для других валют
         valute = data["Valute"][currency_code]
@@ -99,7 +101,6 @@ def try_convert_amount(message: str, data: dict) -> str | None:
         return f"💰 {amount} {currency_code} × {rate:.4f} = {converted} RUB"
 
     except Exception as e:
-        # Для отладки выводим ошибку (потом можно убрать)
         print("[ERROR] Exception in try_convert_amount:", e)
         return None
 
