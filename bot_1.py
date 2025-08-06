@@ -264,8 +264,14 @@ async def rub_kzt_all(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.lower()
 
-    #if "usd" in text:
-        #await usd(update, context)
+    try:
+        raw_text = update.message.text
+    except Exception as e:
+        print("[DEBUG] echo called but update.message.text missing:", e)
+        return
+
+    print("[DEBUG] echo called, raw_text:", repr(raw_text))
+
     if "обменники уральска" in text:
         await kurskz_oral(update, context)
     elif "обменники алматы" in text:
