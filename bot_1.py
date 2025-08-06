@@ -372,7 +372,21 @@ def get_currency_data():
     return cached_data
 
 def get_kursz_data():
+    if globals_store.avg_sell_global is None:
+        try:
+            data = get_kurskz_rub_buy_sell_avg()
+            if data and "avg_sell" in data:
+                globals_store.avg_sell_global = float(data["avg_sell"])
+                print(f"🔁 avg_sell_global автоматически заполнен: {globals_store.avg_sell_global}")
+        except Exception as e:
+            print("[ERROR] Не удалось обновить avg_sell_global:", e)
+            return None
+
+    # Отладочная информация
     print(f"🔁 avg_sell_global получен: {globals_store.avg_sell_global}")
+    print("[DEBUG] globals_store module file:", getattr(globals_store, "__file__", None))
+    print("[DEBUG] id(globals_store) =", id(globals_store))
+
     return globals_store.avg_sell_global
 
 # 🔄 Функция обновления кеша курсов
