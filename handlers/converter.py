@@ -36,6 +36,7 @@ def try_convert_amount(message: str, data: dict) -> str | None:
             converted = round(amount / kzt_per_1_rub, 2)
             line_cb = f"💰 По курсу ЦБ {amount} {currency_code} / {kzt_per_1_rub:.4f} = {converted} RUB"
 
+            print(f"[DEBUG] local_rate={local_rate!r}, local_rate_num={local_rate_num!r}")
             if local_rate_num is not None and local_rate_num > 0:
                 converted_local = round(amount / local_rate_num, 2)
                 line_local = f"По обменному курсу {amount} {currency_code} / {local_rate_num:.4f} = {converted_local} RUB"
