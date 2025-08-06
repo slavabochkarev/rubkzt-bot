@@ -48,7 +48,6 @@ def try_convert_amount(message: str, data: dict) -> str | None:
         # Если пользователь вводит KZT — пересчитываем как "обратный курс"
         if currency_code in ("KZT", "KZ", "КЗ", "ЛЯ"):
             print("[DEBUG] enter KZT-branch")
-            # Попытка получить локальный курс (из globals_store через get_kursz_data)
             try:
                 local_rate = get_kursz_data()
             except Exception as e:
@@ -411,17 +410,20 @@ async def kurskz_detail_almaty(update: Update, context: ContextTypes.DEFAULT_TYP
     await update.message.reply_text(result_text)
          
 async def kurskz(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    global avg_sell_global
     data = get_kurskz_rub_buy_sell_avg()
     if not data:
         await update.message.reply_text("Не удалось получить данные об обменниках.")
         return
-        
+
     # Обновляем глобальную переменную
     try:
         avg_sell_global = float(data['avg_sell'])
-    except Exception:
+        print(f"[DEBUG] kurskz handler assigned avg_sell_global = {avg_sell_global}")
+    except Exception as e:
+        print("[ERROR] kurskz: cannot convert avg_sell:", e)
         avg_sell_global = None
-    
+
     message = (
         f"📊 <b>Средний курс RUB по {data['count']} обменникам Уральска:</b>\n"
         f"💰 Покупка: <b>{data['avg_buy']:.2f}</b> ₸\n"
@@ -461,25 +463,26 @@ def get_kursz_data():
 
 # 🔄 Функция обновления кеша курсов
 def update_currency_data():
-    global cached_data, last_updated
+    global cached_data, last_updated, avg_sell_global
     try:
         response = requests.get("https://www.cbr-xml-daily.ru/daily_json.js", timeout=10)
         response.raise_for_status()
         cached_data = response.json()
         last_updated = datetime.datetime.now()
-        
         print(f"🔁 Данные обновлены из сети: {last_updated}")
     except Exception as e:
         print("❌ Ошибка при обновлении курса:", e)
-        
+
     # Пытаемся обновить средний курс обменников (kurs.kz)
     try:
-        kurs_data = get_kurskz_rub_buy_sell_avg()  # должна возвращать dict с avg_buy/avg_sell/count
+        kurs_data = get_kurskz_rub_buy_sell_avg()  # корректное имя
         if kurs_data and "avg_sell" in kurs_data:
             try:
-                avg_sell_global = float(data['avg_sell'])
-            except Exception:
-                avg_sell_global = None               
+                avg_sell_global = float(kurs_data['avg_sell'])  # исправлено: kurs_data
+                print(f"🔁 avg_sell_global обновлён: {avg_sell_global}")
+            except Exception as e:
+                print("❌ Не удалось привести avg_sell к float:", e)
+                avg_sell_global = None
         else:
             print("⚠️ Не удалось получить avg_sell из kurs.kz (пустой ответ).")
     except Exception as e:
