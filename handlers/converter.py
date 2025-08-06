@@ -10,7 +10,7 @@ def try_convert_amount(message: str, data: dict) -> str | None:
         currency_code = currency_code.upper()
 
         # Проверка наличия валюты
-        if currency_code not in data["Valute"] or currency_code in ("KZT", "KZ", "КЗ"):
+        if currency_code not in data["Valute"] and currency_code not in ("KZT", "KZ", "КЗ", "ЛЯ"):
             return f"❌ Валюта '{currency_code}' не найдена в данных ЦБ РФ."
 
         valute = data["Valute"][currency_code]
@@ -19,11 +19,17 @@ def try_convert_amount(message: str, data: dict) -> str | None:
         name = valute["Name"]
 
         # Если пользователь вводит KZT — пересчитываем как "обратный курс"
-        if currency_code.lower() in ("kzt", "kz", "кз"):
+        if currency_code in ("KZT", "KZ", "КЗ"):
             try:
                 local_rate = get_kursz_data()  
             except Exception:
                 local_rate = None
+                
+           if local_rate is not None:
+                try:
+                    local_rate_num = float(local_rate)
+                except Exception:
+                    local_rate_num = None    
                 
             valute = data["Valute"]["KZT"]
             nominal = valute["Nominal"]
@@ -33,9 +39,9 @@ def try_convert_amount(message: str, data: dict) -> str | None:
                        
             converted = round(amount / kzt_per_1_rub, 2)
             line_cb = f"💰 По курсу ЦБ {amount} {currency_code} / {kzt_per_1_rub:.4f} = {converted} RUB"
-            if local_rate and local_rate > 0:
-                converted_local = round(amount / local_rate, 2)
-                line_local = f"По обменному курсу {amount} {currency_code} / {local_rate:.4f} = {converted_local} RUB"
+            if local_rate_num and local_rate_num > 0:
+                converted_local = round(amount / local_rate_num, 2)
+                line_local = f"По обменному курсу {amount} {currency_code} / {local_rate_num:.4f} = {converted_local} RUB"
                 return f"{line_cb}\n{line_local}"
             else:
                 return line_cb
