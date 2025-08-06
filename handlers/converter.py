@@ -25,7 +25,7 @@ def try_convert_amount(message: str, data: dict) -> str | None:
             except Exception:
                 local_rate = None
                 
-         if local_rate is not None:
+        if local_rate is not None:
             try:
                 local_rate_num = float(local_rate)
             except Exception:
@@ -39,11 +39,12 @@ def try_convert_amount(message: str, data: dict) -> str | None:
                        
             converted = round(amount / kzt_per_1_rub, 2)
             line_cb = f"💰 По курсу ЦБ {amount} {currency_code} / {kzt_per_1_rub:.4f} = {converted} RUB"
-            if local_rate_num and local_rate_num > 0:
+            
+        if local_rate_num and local_rate_num > 0:
                 converted_local = round(amount / local_rate_num, 2)
                 line_local = f"По обменному курсу {amount} {currency_code} / {local_rate_num:.4f} = {converted_local} RUB"
                 return f"{line_cb}\n{line_local}"
-            else:
+        else:
                 return line_cb
         else:
             rate = value / nominal
