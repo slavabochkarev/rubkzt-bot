@@ -15,12 +15,12 @@ import os
 from handlers.converter import try_convert_amount
 from flask import Flask
 import threading
+import globals_store
 
 # Глобальный кэш
 cached_data = None
 last_updated = None
 CACHE_TTL = datetime.timedelta(hours=1)  # Время жизни кэша: 1 час
-avg_sell_global = None  
 
 def get_nbrk_rub():
     url = "https://nationalbank.kz/rss/rates_all.xml"
@@ -322,13 +322,16 @@ async def kurskz_detail_almaty(update: Update, context: ContextTypes.DEFAULT_TYP
     await update.message.reply_text(result_text)
          
 async def kurskz(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    global avg_sell_global 
     data = get_kurskz_rub_buy_sell_avg()
     if not data:
         await update.message.reply_text("Не удалось получить данные об обменниках.")
         return
+        
     # Обновляем глобальную переменную
-    avg_sell_global = data['avg_sell']
+    try:
+        globals_store.avg_sell_global = float(data['avg_sell'])
+    except Exception:
+        globals_store.avg_sell_global = None
     
     message = (
         f"📊 <b>Средний курс RUB по {data['count']} обменникам Уральска:</b>\n"
@@ -365,9 +368,8 @@ def get_currency_data():
     return cached_data
 
 def get_kursz_data():
-    global avg_sell_global
-    print(f"🔁 avg_sell_global получен: {avg_sell_global}")
-    return avg_sell_global
+    print(f"🔁 avg_sell_global получен: {globals_store.avg_sell_global}")
+    return return globals_store.avg_sell_global
 
 # 🔄 Функция обновления кеша курсов
 def update_currency_data():
