@@ -12,15 +12,98 @@ import xml.etree.ElementTree as ET
 from telegram import BotCommand, MenuButtonCommands
 from dotenv import load_dotenv
 import os
-from handlers.converter import try_convert_amount
 from flask import Flask
 import threading
-from handlers import globals_store
+
 
 # Глобальный кэш
 cached_data = None
+avg_sell_global = None
 last_updated = None
 CACHE_TTL = datetime.timedelta(hours=1)  # Время жизни кэша: 1 час
+
+def try_convert_amount(message: str, data: dict) -> str | None:
+    """Пробует распознать сообщение '<amount> <currency>' и умножить на курс ЦБ РФ."""
+    try:
+        print("[DEBUG] start try_convert_amount, message:", message)
+        parts = message.strip().lower().split()
+        if len(parts) != 2:
+            print("[DEBUG] parts len != 2 -> None")
+            return None
+
+        amount_str, currency_code = parts
+        try:
+            amount = float(amount_str.replace(",", "."))
+        except Exception as e:
+            print("[DEBUG] invalid amount:", amount_str, "error:", e)
+            return None
+
+        currency_code = currency_code.upper()
+
+        # Проверка наличия валюты
+        if currency_code not in data.get("Valute", {}) and currency_code not in ("KZT", "KZ", "КЗ", "ЛЯ"):
+            print(f"[DEBUG] currency {currency_code} not found in data")
+            return f"❌ Валюта '{currency_code}' не найдена в данных ЦБ РФ."
+
+        # Если пользователь вводит KZT — пересчитываем как "обратный курс"
+        if currency_code in ("KZT", "KZ", "КЗ", "ЛЯ"):
+            print("[DEBUG] enter KZT-branch")
+            # Попытка получить локальный курс (из globals_store через get_kursz_data)
+            try:
+                local_rate = get_kursz_data()
+            except Exception as e:
+                print("[DEBUG] get_kursz_data() raised:", e)
+                local_rate = None
+            
+            # Пытаемся привести к числу
+            try:
+                local_rate_num = float(local_rate) if local_rate is not None else None
+            except Exception as e:
+                print("[DEBUG] float(local_rate) failed:", repr(local_rate), "err:", e)
+                local_rate_num = None
+
+            # Берём данные ЦБ по KZT; если их нет — корректно обработаем
+            kzt_valute = data.get("Valute", {}).get("KZT")
+            if not kzt_valute:
+                print("[DEBUG] data has no Valute['KZT']")
+                if local_rate_num is not None and local_rate_num > 0:
+                    converted_local = round(amount / local_rate_num, 2)
+                    line_local = f"🔁 По обменному курсу {amount} KZT / {local_rate_num:.4f} = {converted_local} RUB"
+                    return line_local
+                return "❌ Нет данных по KZT в данных ЦБ РФ и локальный курс недоступен."
+
+            nominal = kzt_valute["Nominal"]
+            value = kzt_valute["Value"]
+            rub_per_1_kzt = value / nominal
+            kzt_per_1_rub = 1 / rub_per_1_kzt
+            currency_code = "KZT"
+
+            converted_cb = round(amount / kzt_per_1_rub, 2)
+            line_cb = f"💰 По курсу ЦБ {amount} {currency_code} / {kzt_per_1_rub:.4f} = {converted_cb} RUB"
+
+            if local_rate_num is not None and local_rate_num > 0:
+                converted_local = round(amount / local_rate_num, 2)
+                line_local = f"🔁 По обменному курсу {amount} {currency_code} / {local_rate_num:.4f} = {converted_local} RUB"
+                print("[DEBUG] returning CB + local")
+                return f"{line_cb}\n{line_local}"
+            else:
+                print("[DEBUG] returning CB only")
+                return line_cb
+
+        # Общий случай для других валют
+        valute = data["Valute"][currency_code]
+        nominal = valute["Nominal"]
+        value = valute["Value"]
+        rate = value / nominal
+        converted = round(amount * rate, 2)
+        print("[DEBUG] returning general conversion")
+        return f"💰 {amount} {currency_code} × {rate:.4f} = {converted} RUB"
+
+    except Exception as e:
+        # Для отладки выводим ошибку (потом можно убрать)
+        print("[ERROR] Exception in try_convert_amount:", e)
+        return None
+
 
 def get_nbrk_rub():
     url = "https://nationalbank.kz/rss/rates_all.xml"
@@ -335,13 +418,9 @@ async def kurskz(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
     # Обновляем глобальную переменную
     try:
-        globals_store.avg_sell_global = float(data['avg_sell'])
+        avg_sell_global = float(data['avg_sell'])
     except Exception:
-        globals_store.avg_sell_global = None
-        
-    print("[DEBUG] assigned globals_store.avg_sell_global =", globals_store.avg_sell_global)
-    print("[DEBUG] globals_store module file:", getattr(globals_store, "__file__", None))
-    print("[DEBUG] id(globals_store) =", id(globals_store))    
+        avg_sell_global = None
     
     message = (
         f"📊 <b>Средний курс RUB по {data['count']} обменникам Уральска:</b>\n"
@@ -378,22 +457,7 @@ def get_currency_data():
     return cached_data
 
 def get_kursz_data():
-    if globals_store.avg_sell_global is None:
-        try:
-            data = get_kurskz_rub_buy_sell_avg()
-            if data and "avg_sell" in data:
-                globals_store.avg_sell_global = float(data["avg_sell"])
-                print(f"🔁 avg_sell_global автоматически заполнен: {globals_store.avg_sell_global}")
-        except Exception as e:
-            print("[ERROR] Не удалось обновить avg_sell_global:", e)
-            return None
-
-    # Отладочная информация
-    print(f"🔁 avg_sell_global получен: {globals_store.avg_sell_global}")
-    print("[DEBUG] globals_store module file:", getattr(globals_store, "__file__", None))
-    print("[DEBUG] id(globals_store) =", id(globals_store))
-
-    return globals_store.avg_sell_global
+    return avg_sell_global
 
 # 🔄 Функция обновления кеша курсов
 def update_currency_data():
@@ -413,11 +477,9 @@ def update_currency_data():
         kurs_data = get_kurskz_rub_buy_sell_avg()  # должна возвращать dict с avg_buy/avg_sell/count
         if kurs_data and "avg_sell" in kurs_data:
             try:
-                globals_store.avg_sell_global = float(data['avg_sell'])
+                avg_sell_global = float(data['avg_sell'])
             except Exception:
-                globals_store.avg_sell_global = None
-                
-            print(f"🔁 avg_sell_global обновлён: {globals_store.avg_sell_global}")
+                avg_sell_global = None               
         else:
             print("⚠️ Не удалось получить avg_sell из kurs.kz (пустой ответ).")
     except Exception as e:
