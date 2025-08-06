@@ -369,7 +369,7 @@ def get_currency_data():
 
 def get_kursz_data():
     print(f"🔁 avg_sell_global получен: {globals_store.avg_sell_global}")
-    return return globals_store.avg_sell_global
+    return globals_store.avg_sell_global
 
 # 🔄 Функция обновления кеша курсов
 def update_currency_data():
