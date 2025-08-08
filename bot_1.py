@@ -27,11 +27,15 @@ def try_convert_amount(message: str, data: dict) -> str | None:
     try:
         print("[DEBUG] start try_convert_amount, message:", message)
         parts = message.strip().lower().split()
-        if len(parts) != 2:
-            print("[DEBUG] parts len != 2 -> None")
+        # Если пользователь ввёл только сумму — автоматически добавляем "KZT"
+        if len(parts) == 1:
+            amount_str = parts[0]
+            currency_code = "KZT"
+        elif len(parts) == 2:
+            amount_str, currency_code = parts
+        else:
             return None
-
-        amount_str, currency_code = parts
+            
         try:
             amount = float(amount_str.replace(",", "."))
         except Exception as e:
@@ -587,6 +591,7 @@ if __name__ == "__main__":
         if "cannot close a running event loop" not in str(e).lower():
             raise
     
+
 
 
 
