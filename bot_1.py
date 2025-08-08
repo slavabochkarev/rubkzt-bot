@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 import os
 from flask import Flask
 import threading
-
+from supabase_utils import save_user_info, save_location, save_action
 
 # Глобальный кэш
 cached_data = None
@@ -326,6 +326,9 @@ async def course_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # Приветствие
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("🔔 Команда /start получена")
+    user = update.effective_user
+    save_user_info(user)
+    save_action(user.id, "/start")
 
     keyboard = [
         [KeyboardButton("📊 Курсы RUB/KZT"), KeyboardButton("Обменники Уральска"), KeyboardButton("Обменники Алматы")]
@@ -343,6 +346,10 @@ async def rub_kzt_all(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await kurskz_almaty(update, context)  
     
 async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.effective_user
+    message = update.message.text
+    save_action(user.id, f"message: {message}")
+    
     text = update.message.text.lower()
 
     if "обменники уральска" in text:
@@ -581,3 +588,4 @@ if __name__ == "__main__":
         if "cannot close a running event loop" not in str(e).lower():
             raise
     
+
