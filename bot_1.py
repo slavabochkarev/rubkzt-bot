@@ -24,6 +24,10 @@ CACHE_TTL = datetime.timedelta(hours=1)  # Время жизни кэша: 1 ч�
 
 def try_convert_amount(message: str, data: dict) -> str | None:
     """Пробует распознать сообщение '<amount> <currency>' и умножить на курс ЦБ РФ."""
+    user = update.effective_user
+    message = update.message.text
+    save_action(user.id, f"message: {message}")    
+    
     try:
         print("[DEBUG] start try_convert_amount, message:", message)
         parts = message.strip().lower().split()
@@ -346,10 +350,7 @@ async def rub_kzt_all(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await kurskz_almaty(update, context)  
     
 async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user = update.effective_user
-    message = update.message.text
-    save_action(user.id, f"message: {message}")
-    
+   
     text = update.message.text.lower()
 
     if "обменники уральска" in text:
@@ -588,4 +589,5 @@ if __name__ == "__main__":
         if "cannot close a running event loop" not in str(e).lower():
             raise
     
+
 
