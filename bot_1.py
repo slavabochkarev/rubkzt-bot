@@ -536,9 +536,10 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"Данные ЦБ РФ с www.cbr-xml-daily.ru \n"
         f"Данные НБ РК с nationalbank.kz \n"
         f"И данные обменников kurs.kz\n\n"
-        f"Введите сумму и код валюты — и вы получите пересчёт по официальному курсу ЦБ РФ\n\n\n"
+        f"Введите сумму и код валюты (или два кода ) — и вы получите пересчёт по официальному курсу ЦБ РФ (перевод через рубли)\n"
+        f"Примеры: '1000 KZT KGS' или '1000 BYN' или '1000' (если нет параметра значит тенге)\n\n"
         f"💬 Обратная связь — @SlavaBochkarev\n")
-    await update.message.reply_text(ADMIN_CHAT_ID, parse_mode="HTML")      
+    #await update.message.reply_text(ADMIN_CHAT_ID, parse_mode="HTML")      
 
 async def setup_bot_commands(application):
     await application.bot.set_my_commands([
