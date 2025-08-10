@@ -24,47 +24,79 @@ CHAT_ID = None
 CACHE_TTL = datetime.timedelta(hours=1)  # Время жизни кэша: 1 час
 
 def try_convert_amount(message: str, data: dict) -> str | None:
-    """Пробует распознать сообщение '<amount> <currency>' и умножить на курс ЦБ РФ."""    
+    """Пробует распознать сообщение '<amount> <currency1> [currency2]' и умножить на курс ЦБ РФ."""    
     try:
         print("[DEBUG] start try_convert_amount, message:", message)
         parts = message.strip().lower().split()
-        # Если пользователь ввёл только сумму — автоматически добавляем "KZT"
+
         if len(parts) == 1:
             amount_str = parts[0]
-            currency_code = "KZT"
+            currency_from = "KZT"
+            currency_to = None
         elif len(parts) == 2:
-            amount_str, currency_code = parts
+            amount_str, currency_from = parts
+            currency_to = None
+        elif len(parts) == 3:
+            amount_str, currency_from, currency_to = parts
         else:
             return None
-            
+
+        # Пробуем преобразовать сумму
         try:
             amount = float(amount_str.replace(",", "."))
         except Exception as e:
             print("[DEBUG] invalid amount:", amount_str, "error:", e)
             return None
 
-        currency_code = currency_code.upper()
+        currency_from = currency_from.upper()
+        currency_to = currency_to.upper() if currency_to else None
 
-        # Проверка наличия валюты
-        if currency_code not in data.get("Valute", {}) and currency_code not in ("KZT", "KZ", "КЗ", "ЛЯ"):
-            return f"❌ Валюта '{currency_code}' не найдена в данных ЦБ РФ."
+        # --- НОВАЯ ЛОГИКА: цепочка через рубли ---
+        if currency_to:
+            # проверка, что обе валюты есть
+            if currency_from not in data.get("Valute", {}) and currency_from not in ("KZT", "KZ", "КЗ", "ЛЯ"):
+                return f"❌ Валюта '{currency_from}' не найдена."
+            if currency_to not in data.get("Valute", {}) and currency_to not in ("KZT", "KZ", "КЗ", "ЛЯ"):
+                return f"❌ Валюта '{currency_to}' не найдена."
 
-        # Если пользователь вводит KZT — пересчитываем как "обратный курс"
-        if currency_code in ("KZT", "KZ", "КЗ", "ЛЯ"):
+            # шаг 1: currency_from -> RUB
+            if currency_from in ("KZT", "KZ", "КЗ", "ЛЯ"):
+                kzt_valute = data["Valute"]["KZT"]
+                rate_from = kzt_valute["Value"] / kzt_valute["Nominal"]
+                amount_rub = amount * rate_from
+            else:
+                valute_from = data["Valute"][currency_from]
+                rate_from = valute_from["Value"] / valute_from["Nominal"]
+                amount_rub = amount * rate_from
+
+            # шаг 2: RUB -> currency_to
+            if currency_to in ("KZT", "KZ", "КЗ", "ЛЯ"):
+                kzt_valute = data["Valute"]["KZT"]
+                rate_to = kzt_valute["Value"] / kzt_valute["Nominal"]
+                amount_final = amount_rub / rate_to
+            else:
+                valute_to = data["Valute"][currency_to]
+                rate_to = valute_to["Value"] / valute_to["Nominal"]
+                amount_final = amount_rub / rate_to
+
+            return f"💱 {amount} {currency_from} → {amount_final:.2f} {currency_to} (через {amount_rub:.2f} RUB)"
+
+        # --- Старая логика (2 аргумента) ---
+        if currency_from in ("KZT", "KZ", "КЗ", "ЛЯ"):
             try:
                 local_rate = get_kursz_data()
             except Exception as e:
                 print("[DEBUG] get_kursz_data() raised:", e)
                 local_rate = None
 
-            # Пытаемся привести к числу
+															 
             try:
                 local_rate_num = float(local_rate) if local_rate is not None else None
             except Exception as e:
                 print("[DEBUG] float(local_rate) failed:", repr(local_rate), "err:", e)
                 local_rate_num = None
 
-            # Берём данные ЦБ по KZT; если их нет — корректно обработаем
+																													 
             kzt_valute = data.get("Valute", {}).get("KZT")
             lines = []
 
@@ -75,33 +107,33 @@ def try_convert_amount(message: str, data: dict) -> str | None:
                 kzt_per_1_rub = 1 / rub_per_1_kzt
 
                 converted_cb = round(amount / kzt_per_1_rub, 2)
-                #lines.append(f"По курсу ЦБ РФ: {amount} KZT / {kzt_per_1_rub:.4f} = {converted_cb} RUB")
+																													
                 lines.append(f"По курсу ЦБ РФ: {converted_cb} ({kzt_per_1_rub:.4f})")
             else:
                 print("[DEBUG] data has no Valute['KZT']")
 
-            # Добавляем локальную строку, если локальный курс валиден
+																													 
             if local_rate_num is not None and local_rate_num > 0:
                 converted_local = round(amount / local_rate_num, 2)
-                #lines.append(f"По обмен курсу: {amount} KZT / {local_rate_num:.4f} = {converted_local} RUB")
+															 
                 lines.append(f"По обмен курсу: {converted_local} ({local_rate_num:.4f})")                
                 diff = converted_cb - converted_local
                 lines.append(f"Разница: <b>{diff:.2f}</b>\n")
                 
             if lines:
-                # соединяем все доступные строки — может быть 1 или 2
-                result = "\n".join(lines)
-                return result
+																											  
+                return "\n".join(lines)
+							 
             else:
                 return "❌ Нет данных по KZT в данных ЦБ РФ и локальный курс недоступен."
 
-        # Общий случай для других валют
-        valute = data["Valute"][currency_code]
+																
+        valute = data["Valute"][currency_from]
         nominal = valute["Nominal"]
         value = valute["Value"]
         rate = value / nominal
         converted = round(amount * rate, 2)
-        return f"💰 {amount} {currency_code} × {rate:.4f} = {converted} RUB"
+        return f"💰 {amount} {currency_from} × {rate:.4f} = {converted} RUB"
 
     except Exception as e:
         print("[ERROR] Exception in try_convert_amount:", e)
