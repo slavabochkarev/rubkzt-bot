@@ -390,6 +390,7 @@ async def course_nb_kz(update: Update, context: ContextTypes.DEFAULT_TYPE):
     data = get_nbrk_course()
     if data:
         usd_rate = data["Valute"]["USD"]["Value"]
+        await update.message.reply_text(usd_rate)
         eur_rate = data["Valute"]["EUR"]["Value"]       
         
         by_rate = data["Valute"]["BYN"]["Value"]
