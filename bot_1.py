@@ -386,7 +386,7 @@ async def course(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # 📊 Общее — НБ КЗ основные валюты
-async def course_nb_kz(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def courseKZ(update: Update, context: ContextTypes.DEFAULT_TYPE):
     data = get_nbrk_course()
     if data:
         usd_rate = data["Valute"]["USD"]["Value"]
@@ -406,8 +406,7 @@ async def course_nb_kz(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         await update.message.reply_text(msg)
     else:
-        await update.message.reply_text("Не удалось получить данные от ЦБ РФ.")
-
+        await update.message.reply_text("Не удалось получить данные от НБ РК.")
 
 
 # 📊 Общее от ЦБ
@@ -675,7 +674,7 @@ async def main():
     app.add_handler(CommandHandler("help", help))
     app.add_handler(CommandHandler("kurs", rub_kzt_all))
     app.add_handler(CommandHandler("course", course))
-    app.add_handler(CommandHandler("courseKZ", course_nb_kz))
+    app.add_handler(CommandHandler("courseKZ", courseKZ))
     app.add_handler(CommandHandler("kurskz", kurskz))
     app.add_handler(CommandHandler("kurs_oral", kurskz_oral))
     app.add_handler(CommandHandler("kurs_almaty", kurskz_detail_almaty))
