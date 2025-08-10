@@ -376,7 +376,7 @@ async def course(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"Курсы валют по данным ЦБ РФ на {date_rf}:\n"
             f"💵 1 RUB = {kzt_rate:.2f} KZT\n"
             f"💵 1 RUB = {som_rate:.2f} KGS\n"
-            f"💵 1 RUB = {by_rate:.2f} BYN\n"
+            f"💵 1 BYN = {by_rate:.2f} RUB\n"
             f"💵 1 USD = {usd_rate:.2f} RUB\n"
             f"💶 1 EUR = {eur_rate:.2f} RUB"
         )
@@ -390,20 +390,19 @@ async def course_nb_kz(update: Update, context: ContextTypes.DEFAULT_TYPE):
     data = get_nbrk_course()
     if data:
         usd_rate = data["Valute"]["USD"]["Value"]
-        await update.message.reply_text(usd_rate)
         eur_rate = data["Valute"]["EUR"]["Value"]       
         
         by_rate = data["Valute"]["BYN"]["Value"]
-        kzt_rate = 1 / (data["Valute"]["KZT"]["Value"] / data["Valute"]["KZT"]["Nominal"])
+        rub_rate = 1 / (data["Valute"]["RUB"]["Value"] / data["Valute"]["RUB"]["Nominal"])
         som_rate = 1 / (data["Valute"]["KGS"]["Value"] / data["Valute"]["KGS"]["Nominal"])
         date_rf = last_updated.strftime('%d.%m.%Y')
         msg = (
             f"Курсы валют по данным ЦБ РФ на {date_rf}:\n"
-            f"💵 1 RUB = {kzt_rate:.2f} KZT\n"
-            f"💵 1 RUB = {som_rate:.2f} KGS\n"
-            f"💵 1 RUB = {by_rate:.2f} BYN\n"
-            f"💵 1 USD = {usd_rate:.2f} RUB\n"
-            f"💶 1 EUR = {eur_rate:.2f} RUB"
+            f"💵 1 KZT = {rub_rate:.2f} RUB\n"
+            f"💵 1 KZT = {som_rate:.2f} KGS\n"
+            f"💵 1 BYN = {by_rate:.2f} KZT\n"
+            f"💵 1 USD = {usd_rate:.2f} KZT\n"
+            f"💶 1 EUR = {eur_rate:.2f} KZT"
         )
         await update.message.reply_text(msg)
     else:
@@ -613,7 +612,7 @@ async def setup_bot_commands(application):
         BotCommand("help", "Описание"),
         BotCommand("kurs", "Курсы ЦБ/НБ и средние по обменникам"),
         BotCommand("course", "Курс валют ЦБ РФ"),
-        BotCommand("course_nb_kz", "Курс валют НБ КЗ"),
+        BotCommand("courseKZ", "Курс валют НБ КЗ"),
         BotCommand("kurs_oral", "Обменники Уральска"),
         BotCommand("kurs_almaty", "Обменники Алматы")
         # Добавь свои команды
