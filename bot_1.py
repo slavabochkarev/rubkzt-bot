@@ -611,7 +611,7 @@ async def setup_bot_commands(application):
         BotCommand("help", "Описание"),
         BotCommand("kurs", "Курсы ЦБ/НБ и средние по обменникам"),
         BotCommand("course", "Курс валют ЦБ РФ"),
-        #BotCommand("courseKZ", "Курс валют НБ КЗ"),
+        BotCommand("courseKZ", "Курс валют НБ КЗ"),
         BotCommand("kurs_oral", "Обменники Уральска"),
         BotCommand("kurs_almaty", "Обменники Алматы")
         # Добавь свои команды
@@ -674,7 +674,7 @@ async def main():
     app.add_handler(CommandHandler("help", help))
     app.add_handler(CommandHandler("kurs", rub_kzt_all))
     app.add_handler(CommandHandler("course", course))
-    #app.add_handler(CommandHandler("courseKZ", courseKZ))
+    app.add_handler(CommandHandler("courseKZ", courseKZ))
     app.add_handler(CommandHandler("kurskz", kurskz))
     app.add_handler(CommandHandler("kurs_oral", kurskz_oral))
     app.add_handler(CommandHandler("kurs_almaty", kurskz_detail_almaty))
