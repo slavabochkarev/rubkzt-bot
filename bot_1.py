@@ -20,6 +20,7 @@ from supabase_utils import save_user_info, save_location, save_action
 cached_data = None
 avg_sell_global = None
 last_updated = None
+CHAT_ID = None
 CACHE_TTL = datetime.timedelta(hours=1)  # Время жизни кэша: 1 час
 
 def try_convert_amount(message: str, data: dict) -> str | None:
@@ -294,10 +295,11 @@ async def course(update: Update, context: ContextTypes.DEFAULT_TYPE):
     data = get_currency_data()
     if data:
         usd_rate = data["Valute"]["USD"]["Value"]
-        eur_rate = data["Valute"]["EUR"]["Value"]
-        som_rate = data["Valute"]["KGS"]["Value"]
+        eur_rate = data["Valute"]["EUR"]["Value"]       
+        
         by_rate = data["Valute"]["BYN"]["Value"]
         kzt_rate = 1 / (data["Valute"]["KZT"]["Value"] / data["Valute"]["KZT"]["Nominal"])
+        som_rate = 1 / (data["Valute"]["KGS"]["Value"] / data["Valute"]["KGS"]["Nominal"])
         date_rf = last_updated.strftime('%d.%m.%Y')
         msg = (
             f"Курсы валют по данным ЦБ РФ на {date_rf}:\n"
@@ -333,10 +335,14 @@ async def course_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
 # Приветствие
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    global ADMIN_CHAT_ID
+    
     print("🔔 Команда /start получена")
     user = update.effective_user
     save_user_info(user)
     save_action(user.id, "/start")
+    
+    ADMIN_CHAT_ID = update.effective_chat.id
 
     keyboard = [
         [KeyboardButton("📊 Курсы RUB/KZT"), KeyboardButton("Обменники Уральска"), KeyboardButton("Обменники Алматы")]
@@ -494,14 +500,13 @@ def update_currency_data():
         print("❌ Ошибка при получении данных с kurs.kz:", e)
         
 async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat = update.effective_chat.id
     await update.message.reply_text(
         f"Данные ЦБ РФ с www.cbr-xml-daily.ru \n"
         f"Данные НБ РК с nationalbank.kz \n"
         f"И данные обменников kurs.kz\n\n"
         f"Введите сумму и код валюты — и вы получите пересчёт по официальному курсу ЦБ РФ\n\n\n"
         f"💬 Обратная связь — @SlavaBochkarev\n")
-    await update.message.reply_text(chat, parse_mode="HTML")      
+    await update.message.reply_text(ADMIN_CHAT_ID, parse_mode="HTML")      
 
 async def setup_bot_commands(application):
     await application.bot.set_my_commands([
