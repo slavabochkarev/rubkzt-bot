@@ -500,9 +500,8 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"Данные НБ РК с nationalbank.kz \n"
         f"И данные обменников kurs.kz\n\n"
         f"Введите сумму и код валюты — и вы получите пересчёт по официальному курсу ЦБ РФ\n\n\n"
-        f"💬 Обратная связь — @SlavaBochkarev\n"
-    await update.message.reply_text(chat, parse_mode="HTML")   
-    )
+        f"💬 Обратная связь — @SlavaBochkarev\n")
+    await update.message.reply_text(chat, parse_mode="HTML")      
 
 async def setup_bot_commands(application):
     await application.bot.set_my_commands([
