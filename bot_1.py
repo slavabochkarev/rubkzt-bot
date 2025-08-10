@@ -139,7 +139,7 @@ def try_convert_amount(message: str, data: dict) -> str | None:
         print("[ERROR] Exception in try_convert_amount:", e)
         return None
 
-
+#тут только рубли
 def get_nbrk_rub():
     url = "https://nationalbank.kz/rss/rates_all.xml"
     try:
@@ -162,6 +162,45 @@ def get_nbrk_rub():
         print(f"Ошибка при получении курса из НБРК: {e}")
         return None        
 
+
+def get_nbrk_course():
+    """
+    Получает курсы валют с сайта НБРК и возвращает их в виде словаря, 
+    похожего на формат daily_json.js от ЦБ РФ.
+    """
+    url = "https://nationalbank.kz/rss/rates_all.xml"
+    try:
+        response = requests.get(url, timeout=5)
+        response.raise_for_status()
+        root = ET.fromstring(response.content)
+
+        valutes = {}
+
+        for item in root.findall(".//item"):
+            code = item.find("title").text.strip().upper()
+            rate_str = item.find("description").text.strip()
+            nominal_str = item.find("quant").text.strip() if item.find("quant") is not None else "1"
+
+            try:
+                rate = float(rate_str.replace(",", "."))
+                nominal = int(nominal_str)
+            except ValueError:
+                continue
+
+            valutes[code] = {
+                "CharCode": code,
+                "Nominal": nominal,
+                "Value": rate
+            }
+
+        return {
+            "Date": root.find(".//pubDate").text if root.find(".//pubDate") is not None else None,
+            "Valute": valutes
+        }
+
+    except Exception as e:
+        print(f"Ошибка при получении курса из НБРК: {e}")
+        return None
 
 def get_kurskz_rub_buy_sell_avg():
     kurs_list = get_kurskz_rub_buy_sell_all()
@@ -322,7 +361,7 @@ async def kzt(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Не удалось получить данные от ЦБ.")
 
         
-# 📊 Общее — USD и EUR
+# 📊 Общее — ЦБ РФ основные валюты
 async def course(update: Update, context: ContextTypes.DEFAULT_TYPE):
     data = get_currency_data()
     if data:
@@ -344,6 +383,32 @@ async def course(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(msg)
     else:
         await update.message.reply_text("Не удалось получить данные от ЦБ РФ.")
+
+
+# 📊 Общее — НБ КЗ основные валюты
+async def course_nb_kz(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    data = get_nbrk_course()
+    if data:
+        usd_rate = data["Valute"]["USD"]["Value"]
+        eur_rate = data["Valute"]["EUR"]["Value"]       
+        
+        by_rate = data["Valute"]["BYN"]["Value"]
+        kzt_rate = 1 / (data["Valute"]["KZT"]["Value"] / data["Valute"]["KZT"]["Nominal"])
+        som_rate = 1 / (data["Valute"]["KGS"]["Value"] / data["Valute"]["KGS"]["Nominal"])
+        date_rf = last_updated.strftime('%d.%m.%Y')
+        msg = (
+            f"Курсы валют по данным ЦБ РФ на {date_rf}:\n"
+            f"💵 1 RUB = {kzt_rate:.2f} KZT\n"
+            f"💵 1 RUB = {som_rate:.2f} KGS\n"
+            f"💵 1 RUB = {by_rate:.2f} BYN\n"
+            f"💵 1 USD = {usd_rate:.2f} RUB\n"
+            f"💶 1 EUR = {eur_rate:.2f} RUB"
+        )
+        await update.message.reply_text(msg)
+    else:
+        await update.message.reply_text("Не удалось получить данные от ЦБ РФ.")
+
+
 
 # 📊 Общее от ЦБ
 async def course_cb(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -547,6 +612,7 @@ async def setup_bot_commands(application):
         BotCommand("help", "Описание"),
         BotCommand("kurs", "Курсы ЦБ/НБ и средние по обменникам"),
         BotCommand("course", "Курс валют ЦБ РФ"),
+        BotCommand("course_nb_kz", "Курс валют НБ КЗ"),
         BotCommand("kurs_oral", "Обменники Уральска"),
         BotCommand("kurs_almaty", "Обменники Алматы")
         # Добавь свои команды
@@ -609,6 +675,7 @@ async def main():
     app.add_handler(CommandHandler("help", help))
     app.add_handler(CommandHandler("kurs", rub_kzt_all))
     app.add_handler(CommandHandler("course", course))
+    app.add_handler(CommandHandler("courseKZ", course_nb_kz))
     app.add_handler(CommandHandler("kurskz", kurskz))
     app.add_handler(CommandHandler("kurs_oral", kurskz_oral))
     app.add_handler(CommandHandler("kurs_almaty", kurskz_detail_almaty))
