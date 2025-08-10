@@ -611,7 +611,7 @@ async def setup_bot_commands(application):
         BotCommand("help", "Описание"),
         BotCommand("kurs", "Курсы ЦБ/НБ и средние по обменникам"),
         BotCommand("course", "Курс валют ЦБ РФ"),
-        BotCommand("KZcourseKZ", "Курс валют НБ КЗ"),
+        #BotCommand("KZcourseKZ", "Курс валют НБ КЗ"),
         BotCommand("kurs_oral", "Обменники Уральска"),
         BotCommand("kurs_almaty", "Обменники Алматы")
         # Добавь свои команды
