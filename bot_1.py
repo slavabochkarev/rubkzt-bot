@@ -577,12 +577,7 @@ def update_currency_data(context: ContextTypes.DEFAULT_TYPE):
         cached_data = response.json()
         last_updated = datetime.datetime.now()
         print(f"🔁 Данные обновлены из сети: {last_updated}")
-        
-        if ADMIN_CHAT_ID:
-            context.bot.send_message(
-                chat_id=ADMIN_CHAT_ID,
-                text=f"📢 Курс изменился! {last_updated}"
-            )
+       
     except Exception as e:
         print("❌ Ошибка при обновлении курса:", e)
 
@@ -663,7 +658,13 @@ async def setup_bot_commands(application):
     
 # 🕒 Задача для JobQueue
 async def update_currency_data_job(context: ContextTypes.DEFAULT_TYPE):
+    global ADMIN_CHAT_ID
     update_currency_data(context)
+    if ADMIN_CHAT_ID:
+       await context.bot.send_message(
+                chat_id=ADMIN_CHAT_ID,
+                text=f"📢 Курс изменился! {last_updated}"
+            )
     
 # URL для автопинга — лучше задать как переменную окружения в Render (PING_URL),
 # иначе используется дефолт.
