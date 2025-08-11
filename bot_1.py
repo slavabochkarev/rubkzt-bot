@@ -579,7 +579,7 @@ def update_currency_data():
         print(f"🔁 Данные обновлены из сети: {last_updated}")
         
         if ADMIN_CHAT_ID:
-            await context.bot.send_message(
+            context.bot.send_message(
                 chat_id=ADMIN_CHAT_ID,
                 text=f"📢 Курс изменился! {last_updated}"
             )
