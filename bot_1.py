@@ -398,8 +398,8 @@ async def coursekz(update: Update, context: ContextTypes.DEFAULT_TYPE):
         date_rk = data["Date"]
         msg = (
             f"Курсы валют по данным НБ КЗ на {date_rk}:\n"
-            f"💵 1 KZT = {rub_rate:.2f} RUB\n"
-            f"💵 1 KZT = {som_rate:.2f} KGS\n"
+            f"💵 1 RUB = {rub_rate:.2f} KZT\n"
+            f"💵 1 KGS = {som_rate:.2f} KZT\n"
             f"💵 1 BYN = {by_rate:.2f} KZT\n"
             f"💵 1 USD = {usd_rate:.2f} KZT\n"
             f"💶 1 EUR = {eur_rate:.2f} KZT"
@@ -577,6 +577,12 @@ def update_currency_data():
         cached_data = response.json()
         last_updated = datetime.datetime.now()
         print(f"🔁 Данные обновлены из сети: {last_updated}")
+        
+         if ADMIN_CHAT_ID:
+            await context.bot.send_message(
+                chat_id=ADMIN_CHAT_ID,
+                text=f"📢 Курс изменился! {last_updated}"
+            )
     except Exception as e:
         print("❌ Ошибка при обновлении курса:", e)
 
