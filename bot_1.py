@@ -20,7 +20,7 @@ from supabase_utils import save_user_info, save_location, save_action
 cached_data = None
 avg_sell_global = None
 last_updated = None
-CHAT_ID = None
+ADMIN_CHAT_ID = None
 CACHE_TTL = datetime.timedelta(hours=1)  # Время жизни кэша: 1 час
 
 def try_convert_amount(message: str, data: dict) -> str | None:
@@ -570,7 +570,7 @@ def get_kursz_data():
 
 # 🔄 Функция обновления кеша курсов
 def update_currency_data():
-    global cached_data, last_updated, avg_sell_global
+    global cached_data, last_updated, avg_sell_global, ADMIN_CHAT_ID
     try:
         response = requests.get("https://www.cbr-xml-daily.ru/daily_json.js", timeout=10)
         response.raise_for_status()
