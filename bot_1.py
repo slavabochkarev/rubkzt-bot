@@ -458,7 +458,7 @@ async def rub_kzt_all(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     message = update.message.text
-    save_action(user.id, f"message: {message}")       
+    save_action(user.id, f"{message}")       
     text = message.lower()
 
     if "обменники уральска" in text:
@@ -607,7 +607,8 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"Данные НБ РК с nationalbank.kz \n"
         f"И данные обменников kurs.kz\n\n"
         f"Введите сумму и код валюты (или два кода ) — и вы получите пересчёт по официальному курсу ЦБ РФ (перевод через рубли)\n"
-        f"Примеры: '1000 KZT KGS' или '1000 BYN' или '1000' (если нет параметра значит тенге)\n\n"
+        f"Примеры: '1000 KZT KGS' или '1000 BYN' или '1000'\n"
+        f"Третий параметр по умолчанию RUB, второй по умолчанию KZT\n\n"
         f"💬 Обратная связь — @SlavaBochkarev\n")
     #await update.message.reply_text(ADMIN_CHAT_ID, parse_mode="HTML")      
 
