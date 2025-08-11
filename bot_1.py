@@ -393,11 +393,11 @@ async def coursekz(update: Update, context: ContextTypes.DEFAULT_TYPE):
         eur_rate = data["Valute"]["EUR"]["Value"]       
         
         by_rate = data["Valute"]["BYN"]["Value"]
-        rub_rate = 1 / (data["Valute"]["RUB"]["Value"] / data["Valute"]["RUB"]["Nominal"])
-        som_rate = 1 / (data["Valute"]["KGS"]["Value"] / data["Valute"]["KGS"]["Nominal"])
-        #date_rf = last_updated.strftime('%d.%m.%Y')
+        rub_rate = data["Valute"]["RUB"]["Value"] 
+        som_rate = data["Valute"]["KGS"]["Value"] 
+        date_rk = data["Date"]
         msg = (
-            f"Курсы валют по данным НБ КЗ:\n"
+            f"Курсы валют по данным НБ КЗ на {date_rk}:\n"
             f"💵 1 KZT = {rub_rate:.2f} RUB\n"
             f"💵 1 KZT = {som_rate:.2f} KGS\n"
             f"💵 1 BYN = {by_rate:.2f} KZT\n"
