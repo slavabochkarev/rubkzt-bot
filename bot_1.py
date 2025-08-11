@@ -569,7 +569,7 @@ def get_kursz_data():
     return avg_sell_global
 
 # 🔄 Функция обновления кеша курсов
-def update_currency_data():
+def update_currency_data(context: ContextTypes.DEFAULT_TYPE):
     global cached_data, last_updated, avg_sell_global, ADMIN_CHAT_ID
     try:
         response = requests.get("https://www.cbr-xml-daily.ru/daily_json.js", timeout=10)
@@ -630,7 +630,7 @@ async def setup_bot_commands(application):
     
 # 🕒 Задача для JobQueue
 async def update_currency_data_job(context: ContextTypes.DEFAULT_TYPE):
-    update_currency_data()
+    update_currency_data(context)
     
 # URL для автопинга — лучше задать как переменную окружения в Render (PING_URL),
 # иначе используется дефолт.
