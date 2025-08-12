@@ -15,6 +15,7 @@ import os
 from flask import Flask
 import threading
 from supabase_utils import save_user_info, save_location, save_action
+from concurrent.futures import ThreadPoolExecutor
 
 # Глобальный кэш
 cached_data = None
