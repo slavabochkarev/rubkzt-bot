@@ -21,6 +21,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
 # Глобальный кэш
@@ -32,17 +33,15 @@ CACHE_TTL = datetime.timedelta(hours=1)  # Время жизни кэша: 1 ч�
 executor = ThreadPoolExecutor()
 
 def get_rub_kzt_rate():
-    """
-    Возвращает текущий курс RUB/KZT с Google Finance в формате float.
-    Работает в headless-режиме, подходит для Render.
-    """
+    """Возвращает текущий курс RUB/KZT с Google Finance в формате float."""
     options = Options()
-    options.add_argument("--headless")         # без окна браузера
-    options.add_argument("--disable-gpu")      # отключить GPU (важно для серверов)
-    options.add_argument("--no-sandbox")       # для запуска в контейнерах
-    options.add_argument("--disable-dev-shm-usage")  # избегает ошибок памяти
-    
-    driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
+    options.add_argument("--headless")
+    options.add_argument("--disable-gpu")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+
+    service = Service(ChromeDriverManager().install())
+    driver = webdriver.Chrome(service=service, options=options)
 
     try:
         driver.get("https://www.google.com/finance/quote/RUB-KZT")
@@ -56,7 +55,7 @@ def get_rub_kzt_rate():
 
     finally:
         driver.quit()
-
+        
 def try_convert_amount(message: str, data: dict) -> str | None:
     """Пробует распознать сообщение '<amount> <currency1> [currency2]' и умножить на курс ЦБ РФ."""    
     try:
