@@ -33,8 +33,9 @@ CACHE_TTL = datetime.timedelta(hours=1)  # Время жизни кэша: 1 ч�
 executor = ThreadPoolExecutor()
 
 def get_rub_kzt_rate():
-    """Возвращает текущий курс RUB/KZT с Google Finance в формате float."""
+    chrome_path = "/usr/bin/google-chrome"  # Render ставит сюда
     options = Options()
+    options.binary_location = chrome_path
     options.add_argument("--headless")
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
@@ -45,14 +46,10 @@ def get_rub_kzt_rate():
 
     try:
         driver.get("https://www.google.com/finance/quote/RUB-KZT")
-
         elem = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "div.YMlKec.fxKbKc"))
         )
-
-        text_rate = elem.text.strip().replace(",", ".")
-        return float(text_rate)
-
+        return float(elem.text.strip().replace(",", "."))
     finally:
         driver.quit()
         
