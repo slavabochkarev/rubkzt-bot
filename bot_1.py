@@ -138,7 +138,7 @@ def try_convert_amount(message: str, data: dict) -> str | None:
 
                 converted_cb = round(amount / kzt_per_1_rub, 2)
 																													
-                lines.append(f"По курсу ЦБ РФ: {converted_cb} ({kzt_per_1_rub:.4f})")
+                lines.append(f"По курсу ЦБ РФ: {converted_cb} RUB ({kzt_per_1_rub:.4f})")
             else:
                 print("[DEBUG] data has no Valute['KZT']")
 
@@ -146,9 +146,9 @@ def try_convert_amount(message: str, data: dict) -> str | None:
             if local_rate_num is not None and local_rate_num > 0:
                 converted_local = round(amount / local_rate_num, 2)
 															 
-                lines.append(f"По обмен курсу: {converted_local} ({local_rate_num:.4f})")                
+                lines.append(f"По обмен курсу: {converted_local} RUB ({local_rate_num:.4f})")                
                 diff = converted_cb - converted_local
-                lines.append(f"Разница: <b>{diff:.2f}</b>\n")
+                lines.append(f"Разница: <b>{diff:.2f}</b> рублей\n")
                 
             if lines:
 																											  
@@ -162,7 +162,7 @@ def try_convert_amount(message: str, data: dict) -> str | None:
             nominal = valute["Nominal"]
             value = valute["Value"]
             rate = value / nominal
-            converted = round(amount * rate, 2)
+            converted = round(amount / rate, 2)
             return f"💰 {amount} {currency_from} × {rate:.4f} = {converted} KZT"		
         
         valute = data["Valute"][currency_from]
