@@ -22,6 +22,7 @@ avg_sell_global = None
 last_updated = None
 ADMIN_CHAT_ID = None
 CACHE_TTL = datetime.timedelta(hours=1)  # Время жизни кэша: 1 час
+executor = ThreadPoolExecutor()
 
 def get_rub_kzt_rate():
     """
@@ -625,7 +626,7 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         f"Данные ЦБ РФ с www.cbr-xml-daily.ru \n"
         f"Данные НБ РК с nationalbank.kz \n"
-        f"Данные www.google.com/finance/quote/RUB-KZT \n"
+        f"Данные google.com/finance/quote/RUB-KZT \n"
         f"И данные обменников kurs.kz\n\n"
         f"Введите сумму и код валюты (или два кода ) — и вы получите пересчёт по официальному курсу ЦБ РФ (перевод через рубли)\n"
         f"Примеры: '1000 KZT KGS' или '1000 BYN' или '1000'\n"
@@ -634,10 +635,9 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     #await update.message.reply_text(ADMIN_CHAT_ID, parse_mode="HTML")      
 
 async def google(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    rate = get_rub_kzt_rate()
-    await update.message.reply_text(
-        f"Текущий курс RUB/KZT: {rate}\n"
-        )
+    loop = asyncio.get_event_loop()
+    rate = await loop.run_in_executor(executor, get_rub_kzt_rate)
+    await update.message.reply_text(f"Текущий курс RUB/KZT: {rate}")
     
 async def setup_bot_commands(application):
     await application.bot.set_my_commands([
