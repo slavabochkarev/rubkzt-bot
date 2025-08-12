@@ -35,7 +35,7 @@ def get_rub_kzt_rate():
     options.add_argument("--disable-gpu")      # отключить GPU (важно для серверов)
     options.add_argument("--no-sandbox")       # для запуска в контейнерах
     options.add_argument("--disable-dev-shm-usage")  # избегает ошибок памяти
-
+    
     driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
 
     try:
@@ -627,7 +627,7 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         f"Данные ЦБ РФ с www.cbr-xml-daily.ru \n"
         f"Данные НБ РК с nationalbank.kz \n"
-        f"Данные google.com/finance/quote/RUB-KZT \n"
+        f"Данные google/finance/quote/RUB-KZT \n"
         f"И данные обменников kurs.kz\n\n"
         f"Введите сумму и код валюты (или два кода ) — и вы получите пересчёт по официальному курсу ЦБ РФ (перевод через рубли)\n"
         f"Примеры: '1000 KZT KGS' или '1000 BYN' или '1000'\n"
@@ -714,6 +714,7 @@ async def main():
     app.add_handler(CommandHandler("eur", eur))
     app.add_handler(CommandHandler("kzt", kzt))
     app.add_handler(CommandHandler("help", help))
+    app.add_handler(CommandHandler("google", google))
     app.add_handler(CommandHandler("kurs", rub_kzt_all))
     app.add_handler(CommandHandler("course", course))
     app.add_handler(CommandHandler("coursekz", coursekz))
