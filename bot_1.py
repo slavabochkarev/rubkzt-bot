@@ -661,7 +661,7 @@ async def setup_bot_commands(application):
 # 🕒 Задача для JobQueue
 async def update_currency_data_job(context: ContextTypes.DEFAULT_TYPE):
     global ADMIN_CHAT_ID
-    update_currency_data(context)
+    update_currency_data()
     if ADMIN_CHAT_ID:
        await context.bot.send_message(
                 chat_id=ADMIN_CHAT_ID,
