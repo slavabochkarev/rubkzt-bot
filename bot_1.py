@@ -157,7 +157,14 @@ def try_convert_amount(message: str, data: dict) -> str | None:
             else:
                 return "❌ Нет данных по KZT в данных ЦБ РФ и локальный курс недоступен."
 
-																
+        if currency_from in ("RUB", "RU", "РУБ", "РУ"):    
+            valute = data["Valute"]["KZT"]
+            nominal = valute["Nominal"]
+            value = valute["Value"]
+            rate = value / nominal
+            converted = round(amount * rate, 2)
+            return f"💰 {amount} {currency_from} × {rate:.4f} = {converted} KZT"		
+        
         valute = data["Valute"][currency_from]
         nominal = valute["Nominal"]
         value = valute["Value"]
