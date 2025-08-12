@@ -661,6 +661,7 @@ async def setup_bot_commands(application):
 # 🕒 Задача для JobQueue
 async def update_currency_data_job(context: ContextTypes.DEFAULT_TYPE):
     global ADMIN_CHAT_ID
+    print(f"⏰ update_currency_data_job вызван в {datetime.datetime.now()}")
     update_currency_data()
     if ADMIN_CHAT_ID:
        await context.bot.send_message(
@@ -678,7 +679,7 @@ async def ping_self(context: "ContextTypes.DEFAULT_TYPE"):
         # Выполняем blocking-запрос в ThreadPool, чтобы не блокировать loop
         await asyncio.to_thread(requests.get, PING_URL, {"timeout": 10})
         # если нужно логировать:
-        # print(f"Pinged {PING_URL}")
+        print(f"Pinged {PING_URL}")
     except Exception as e:
         # Не падаем на ошибках пинга — просто залогировать
         print("Ошибка автопинга:", e)        
