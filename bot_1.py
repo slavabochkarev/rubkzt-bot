@@ -16,6 +16,12 @@ from flask import Flask
 import threading
 from supabase_utils import save_user_info, save_location, save_action
 from concurrent.futures import ThreadPoolExecutor
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
 
 # Глобальный кэш
 cached_data = None
