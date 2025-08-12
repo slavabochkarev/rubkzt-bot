@@ -23,6 +23,32 @@ last_updated = None
 ADMIN_CHAT_ID = None
 CACHE_TTL = datetime.timedelta(hours=1)  # Время жизни кэша: 1 час
 
+def get_rub_kzt_rate():
+    """
+    Возвращает текущий курс RUB/KZT с Google Finance в формате float.
+    Работает в headless-режиме, подходит для Render.
+    """
+    options = Options()
+    options.add_argument("--headless")         # без окна браузера
+    options.add_argument("--disable-gpu")      # отключить GPU (важно для серверов)
+    options.add_argument("--no-sandbox")       # для запуска в контейнерах
+    options.add_argument("--disable-dev-shm-usage")  # избегает ошибок памяти
+
+    driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
+
+    try:
+        driver.get("https://www.google.com/finance/quote/RUB-KZT")
+
+        elem = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "div.YMlKec.fxKbKc"))
+        )
+
+        text_rate = elem.text.strip().replace(",", ".")
+        return float(text_rate)
+
+    finally:
+        driver.quit()
+
 def try_convert_amount(message: str, data: dict) -> str | None:
     """Пробует распознать сообщение '<amount> <currency1> [currency2]' и умножить на курс ЦБ РФ."""    
     try:
@@ -599,6 +625,7 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         f"Данные ЦБ РФ с www.cbr-xml-daily.ru \n"
         f"Данные НБ РК с nationalbank.kz \n"
+        f"Данные www.google.com/finance/quote/RUB-KZT \n"
         f"И данные обменников kurs.kz\n\n"
         f"Введите сумму и код валюты (или два кода ) — и вы получите пересчёт по официальному курсу ЦБ РФ (перевод через рубли)\n"
         f"Примеры: '1000 KZT KGS' или '1000 BYN' или '1000'\n"
@@ -606,10 +633,17 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"💬 Обратная связь — @SlavaBochkarev\n")
     #await update.message.reply_text(ADMIN_CHAT_ID, parse_mode="HTML")      
 
+async def google(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    rate = get_rub_kzt_rate()
+    await update.message.reply_text(
+        f"Текущий курс RUB/KZT: {rate}\n"
+        )
+    
 async def setup_bot_commands(application):
     await application.bot.set_my_commands([
         BotCommand("start", "Запустить бота"),
         BotCommand("help", "Описание"),
+        BotCommand("google", "Курс Google"),
         BotCommand("kurs", "Курсы ЦБ/НБ и средние по обменникам"),
         BotCommand("course", "Курс валют ЦБ РФ"),
         BotCommand("coursekz", "Курс валют НБ КЗ"),
