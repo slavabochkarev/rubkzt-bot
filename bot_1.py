@@ -568,8 +568,7 @@ def get_currency_data():
 def get_kursz_data():
     return avg_sell_global
 
-# 🔄 Функция обновления кеша курсов
-def update_currency_data(context: ContextTypes.DEFAULT_TYPE):
+def update_currency_data():
     global cached_data, last_updated, avg_sell_global, ADMIN_CHAT_ID
     try:
         response = requests.get("https://www.cbr-xml-daily.ru/daily_json.js", timeout=10)
@@ -577,39 +576,6 @@ def update_currency_data(context: ContextTypes.DEFAULT_TYPE):
         cached_data = response.json()
         last_updated = datetime.datetime.now()
         print(f"🔁 Данные обновлены из сети: {last_updated}")
-       
-    except Exception as e:
-        print("❌ Ошибка при обновлении курса:", e)
-
-    # Пытаемся обновить средний курс обменников (kurs.kz)
-    try:
-        kurs_data = get_kurskz_rub_buy_sell_avg()  # корректное имя
-        if kurs_data and "avg_sell" in kurs_data:
-            try:
-                avg_sell_global = float(kurs_data['avg_sell'])  # исправлено: kurs_data
-                print(f"🔁 avg_sell_global обновлён: {avg_sell_global}")
-            except Exception as e:
-                print("❌ Не удалось привести avg_sell к float:", e)
-                avg_sell_global = None
-        else:
-            print("⚠️ Не удалось получить avg_sell из kurs.kz (пустой ответ).")
-    except Exception as e:
-        print("❌ Ошибка при получении данных с kurs.kz:", e)
-
-def first_update_currency_data():
-    global cached_data, last_updated, avg_sell_global, ADMIN_CHAT_ID
-    try:
-        response = requests.get("https://www.cbr-xml-daily.ru/daily_json.js", timeout=10)
-        response.raise_for_status()
-        cached_data = response.json()
-        last_updated = datetime.datetime.now()
-        print(f"🔁 Данные обновлены из сети: {last_updated}")
-        
-        if ADMIN_CHAT_ID:
-            context.bot.send_message(
-                chat_id=ADMIN_CHAT_ID,
-                text=f"📢 Курс изменился! {last_updated}"
-            )
     except Exception as e:
         print("❌ Ошибка при обновлении курса:", e)
 
@@ -696,7 +662,7 @@ def run_flask():
     flask_app.run(host="0.0.0.0", port=port)
     
 async def main():
-    first_update_currency_data()
+    update_currency_data()
 
     load_dotenv()
     TOKEN = os.getenv("TOKEN")
