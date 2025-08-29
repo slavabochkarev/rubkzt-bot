@@ -34,25 +34,25 @@ CACHE_TTL = datetime.timedelta(hours=1)  # Время жизни кэша: 1 ч�
 executor = ThreadPoolExecutor()
 
 def get_rub_kzt_rate():
-    chrome_path = "/usr/bin/google-chrome"  # Render ставит сюда
     options = Options()
-    options.binary_location = chrome_path
-    options.add_argument("--headless")
-    options.add_argument("--disable-gpu")
+    options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
+
+    # ВАЖНО: путь к бинарнику Chrome на Render
+    options.binary_location = "/usr/bin/google-chrome-stable"
 
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=options)
 
-    try:
-        driver.get("https://www.google.com/finance/quote/RUB-KZT")
-        elem = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "div.YMlKec.fxKbKc"))
-        )
-        return float(elem.text.strip().replace(",", "."))
-    finally:
-        driver.quit()
+    driver.get("https://www.google.com/finance/quote/RUB-KZT")
+
+    elem = driver.find_element("css selector", "div.YMlKec.fxKbKc")
+    rate = elem.text
+    driver.quit()
+
+    return rate
+
         
 def try_convert_amount(message: str, data: dict) -> str | None:
     """Пробует распознать сообщение '<amount> <currency1> [currency2]' и умножить на курс ЦБ РФ."""    
@@ -749,6 +749,7 @@ if __name__ == "__main__":
     except RuntimeError as e:
         if "cannot close a running event loop" not in str(e).lower():
             raise
+
 
 
 
