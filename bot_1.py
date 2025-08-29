@@ -497,7 +497,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def rub_kzt_all(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await course_cb(update, context)
-	await google(update, context)
+    await google(update, context)
     await kurskz(update, context)
     await kurskz_almaty(update, context)  
     
@@ -761,4 +761,5 @@ if __name__ == "__main__":
     except RuntimeError as e:
         if "cannot close a running event loop" not in str(e).lower():
             raise
+
 
