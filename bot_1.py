@@ -497,8 +497,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def rub_kzt_all(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await course_cb(update, context)
+	await google(update, context)
     await kurskz(update, context)
-    await google(update, context)
     await kurskz_almaty(update, context)  
     
 async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -643,9 +643,10 @@ def update_currency_data():
         
 async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        f"Данные ЦБ РФ с www.cbr-xml-daily.ru - /course\n"
+        f"Данные ЦБ РФ с cbr-xml-daily.ru - /course\n"
         f"Данные НБ РК с nationalbank.kz - /coursekz \n"
-        f"И данные обменников c kurs.kz - /kurs_oral /kurs_almaty\n\n"
+        f"И данные обменников c kurs.kz - /kurs_oral /kurs_almaty\n"
+		f"Курс GOOGLE - /google\n\n"
         f"Или все сразу - /kurs\n\n"
         f"Введите сумму и код валюты (или два кода ) — и вы получите пересчёт по официальному курсу ЦБ РФ (перевод через рубли)\n"
         f"Примеры: '1000 KZT KGS' или '1000 BYN' или '1000'\n"
@@ -760,3 +761,4 @@ if __name__ == "__main__":
     except RuntimeError as e:
         if "cannot close a running event loop" not in str(e).lower():
             raise
+
