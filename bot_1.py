@@ -718,8 +718,8 @@ async def main():
     app.add_handler(CommandHandler("usd", usd))
     app.add_handler(CommandHandler("eur", eur))
     app.add_handler(CommandHandler("kzt", kzt))
-	app.add_handler(CommandHandler("help", help))
-	app.add_handler(CommandHandler("google", google))
+    app.add_handler(CommandHandler("help", help))
+    app.add_handler(CommandHandler("google", google))
     app.add_handler(CommandHandler("kurs", rub_kzt_all))
     app.add_handler(CommandHandler("course", course))
     app.add_handler(CommandHandler("coursekz", coursekz))
@@ -749,6 +749,7 @@ if __name__ == "__main__":
     except RuntimeError as e:
         if "cannot close a running event loop" not in str(e).lower():
             raise
+
 
 
 
