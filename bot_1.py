@@ -708,7 +708,7 @@ def index():
 #    flask_app.run(host="0.0.0.0", port=port)
     
 async def main():
-	print("🤖 Start")
+    print("🤖 Start")
     update_currency_data()
 
     load_dotenv()
@@ -748,8 +748,10 @@ async def main():
     
     await app.run_polling()
 
-    if __name__ == "__main__":    
-        loop = asyncio.get_event_loop()
-        loop.create_task(main())
-        loop.run_forever()
+if __name__ == "__main__":
+    try:
+        asyncio.run(main())
+    except Exception as e:
+        print("=== MAIN FAILED ===", e, file=sys.stderr)
+        raise
 
