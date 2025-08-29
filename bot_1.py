@@ -750,9 +750,12 @@ async def main():
     
     await app.run_polling()
 
-if __name__ == "__main__":   
-    logging.basicConfig(level=logging.INFO)  # для логов PTB
-
-    loop = asyncio.get_event_loop()
-    loop.create_task(main())  # запускаем main() как таск
-    loop.run_forever()        # держим цикл живым
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    
+    try:
+        asyncio.run(main())  # просто запускаем main()
+    except RuntimeError as e:
+        # Игнорируем ошибку закрытия цикла на Render
+        if "cannot close a running event loop" not in str(e).lower():
+            raise
