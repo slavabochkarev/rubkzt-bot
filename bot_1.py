@@ -685,29 +685,29 @@ async def update_currency_data_job(context: ContextTypes.DEFAULT_TYPE):
     
 # URL для автопинга — лучше задать как переменную окружения в Render (PING_URL),
 # иначе используется дефолт.
-#PING_URL = os.environ.get("PING_URL", "https://rubkzt-bot.onrender.com/")
-#async def ping_self(context: "ContextTypes.DEFAULT_TYPE"):
+PING_URL = os.environ.get("PING_URL", "https://rubkzt-bot.onrender.com/")
+async def ping_self(context: "ContextTypes.DEFAULT_TYPE"):
 #    """Пытаемся пинговать сам сайт, чтобы Render не засыпал (вызывается из JobQueue)."""
-#    try:
+    try:
         # Выполняем blocking-запрос в ThreadPool, чтобы не блокировать loop
-#        await asyncio.to_thread(requests.get, PING_URL, {"timeout": 10})
-#        print(f"Pinged {PING_URL}")
-#    except Exception as e:
-#        print("Ошибка автопинга:", e)        
+        await asyncio.to_thread(requests.get, PING_URL, {"timeout": 10})
+        print(f"Pinged {PING_URL}")
+    except Exception as e:
+        print("Ошибка автопинга:", e)        
     
 async def post_init(application):
     print("🤖 Бот запущен")
 
 # 👇 создаём фейковый Flask-сервер
-# flask_app = Flask(__name__)
+flask_app = Flask(__name__)
 
-#@flask_app.route('/')
+@flask_app.route('/')
 def index():
     return "🤖 Telegram bot is running"
 
-# def run_flask():
-#    port = int(os.environ.get("PORT", 10000))
-#    flask_app.run(host="0.0.0.0", port=port)
+def run_flask():
+    port = int(os.environ.get("PORT", 10000))
+    flask_app.run(host="0.0.0.0", port=port)
     
 async def main():
     print("🤖 Start")
@@ -746,16 +746,17 @@ async def main():
 
 	# 🔔 Автопинг сайта каждые 10 минут, чтобы Render не засыпал
     # первый пинг через 60 секунд (чтобы контейнер успел подняться)
-    # app.job_queue.run_repeating(ping_self, interval=600, first=60)
+    app.job_queue.run_repeating(ping_self, interval=600, first=60)
     
     await app.run_polling()
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-    
+    nest_asyncio.apply()    
+    # Фейковый веб-сервер для Render
+    threading.Thread(target=run_flask).start()
+    # threading.Thread(target=run_flask).start()
     try:
-        asyncio.run(main())  # просто запускаем main()
+        asyncio.run(main())
     except RuntimeError as e:
-        # Игнорируем ошибку закрытия цикла на Render
         if "cannot close a running event loop" not in str(e).lower():
             raise
