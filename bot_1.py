@@ -699,7 +699,7 @@ async def post_init(application):
 # 👇 создаём фейковый Flask-сервер
 # flask_app = Flask(__name__)
 
-@flask_app.route('/')
+#@flask_app.route('/')
 def index():
     return "🤖 Telegram bot is running"
 
@@ -756,4 +756,5 @@ if __name__ == "__main__":
     except RuntimeError as e:
         if "cannot close a running event loop" not in str(e).lower():
             raise
+
 
