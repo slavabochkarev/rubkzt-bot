@@ -8,6 +8,7 @@ import re
 import json
 import asyncio
 import sys
+import logging
 import nest_asyncio
 import xml.etree.ElementTree as ET
 from telegram import BotCommand, MenuButtonCommands
@@ -749,11 +750,9 @@ async def main():
     
     await app.run_polling()
 
-if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except Exception as e:
-        print("=== MAIN FAILED ===", e, file=sys.stderr)
-        raise
+if __name__ == "__main__":   
+    logging.basicConfig(level=logging.INFO)  # для логов PTB
 
-
+    loop = asyncio.get_event_loop()
+    loop.create_task(main())  # запускаем main() как таск
+    loop.run_forever()        # держим цикл живым
