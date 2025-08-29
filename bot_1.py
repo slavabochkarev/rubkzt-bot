@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 import re
 import json
 import asyncio
+import sys
 import nest_asyncio
 import xml.etree.ElementTree as ET
 from telegram import BotCommand, MenuButtonCommands
@@ -754,4 +755,5 @@ if __name__ == "__main__":
     except Exception as e:
         print("=== MAIN FAILED ===", e, file=sys.stderr)
         raise
+
 
