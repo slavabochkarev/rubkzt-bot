@@ -658,7 +658,7 @@ async def setup_bot_commands(application):
         BotCommand("course", "Курс валют ЦБ РФ"),
         BotCommand("coursekz", "Курс валют НБ КЗ"),
         BotCommand("kurs_oral", "Обменники Уральска"),
-        BotCommand("kurs_almaty", "Обменники Алматы")
+        BotCommand("kurs_almaty", "Обменники Алматы"),
         BotCommand("codes", "Справочник кодов валют")
     ])
 
@@ -751,4 +751,5 @@ if __name__ == "__main__":
     except RuntimeError as e:
         if "cannot close a running event loop" not in str(e).lower():
             raise
+
 
