@@ -747,14 +747,9 @@ async def main():
     
     await app.run_polling()
 
-if __name__ == "__main__":
-    nest_asyncio.apply()    
-    # Фейковый веб-сервер для Render
-    # threading.Thread(target=run_flask).start()
-    try:
-        asyncio.run(main())
-    except RuntimeError as e:
-        if "cannot close a running event loop" not in str(e).lower():
-            raise
+if __name__ == "__main__":    
+    asyncio.run(main())
+
+
 
 
