@@ -23,6 +23,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
+from codes import codes
 
 # Глобальный кэш
 cached_data = None
@@ -658,7 +659,7 @@ async def setup_bot_commands(application):
         BotCommand("coursekz", "Курс валют НБ КЗ"),
         BotCommand("kurs_oral", "Обменники Уральска"),
         BotCommand("kurs_almaty", "Обменники Алматы")
-        # Добавь свои команды
+        BotCommand("codes", "Справочник кодов валют")
     ])
 
     await application.bot.set_chat_menu_button(
@@ -727,7 +728,10 @@ async def main():
     app.add_handler(CommandHandler("kurs_oral", kurskz_oral))
     app.add_handler(CommandHandler("kurs_almaty", kurskz_detail_almaty))
     app.add_handler(CommandHandler("nbrk", rub_nbrk))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
+	app.add_handler(CommandHandler("codes", codes))
+	app.add_handler(MessageHandler(filters.TEXT & filters.Regex("коды валют"), codes))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & ~filters.Regex("коды валют"), echo))
+
 
     # 🕒 Обновление курса каждый час
     app.job_queue.run_repeating(update_currency_data_job, interval=3600, first=0)
@@ -747,3 +751,4 @@ if __name__ == "__main__":
     except RuntimeError as e:
         if "cannot close a running event loop" not in str(e).lower():
             raise
+
