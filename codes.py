@@ -2,8 +2,8 @@ from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 from telegram import Update
 from telegram.ext import ContextTypes
+import os
 
-# ✅ Функция для подгрузки шрифта с поддержкой кириллицы
 def load_font(size=20):
     font_paths = [
         "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
@@ -18,37 +18,52 @@ def load_font(size=20):
     return ImageFont.load_default()
 
 
+# --- валюты + iso код страны (для названия файла PNG) ---
+CURRENCY_CODES = [
+    ("BYN", "Белорусский рубль", "by"),
+    ("KGS", "Киргизский сом", "kg"),
+    ("KZT", "Казахский тенге", "kz"),
+    ("EGP", "Египетский фунт", "eg"),
+    ("AED", "Дирхам (ОАЭ)", "ae"),
+    ("TRY", "Турецкая лира", "tr"),
+    ("CNY", "Китайский юань", "cn"),
+    ("UZS", "Узбекский сум", "uz"),
+    ("INR", "Индийская рупия", "in"),
+    ("DKK", "Датская крона", "dk"),
+]
+
+FLAGS_DIR = "flags"  # папка с PNG флагами
+
+
 async def codes(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Данные для вывода
-    text = """\
-BYN  Белорусский рубль
-KGS  Киргизкий сом
-KZT  Казахский тенге
-EGP  Египетский фунт
-AED  Дирхам (ОАЭ)
-TRY  Турецкая лира
-CNY  Юань
-UZS  Узбекский сум
-INR  Индийская рупия
-DKK  Датская крона
+    row_height = 60
+    width, height = 600, row_height * len(CURRENCY_CODES) + 80
 
-"""
-
-    # Создаём картинку
-    img = Image.new("RGB", (500, 200), color="white")
+    img = Image.new("RGB", (width, height), (255, 255, 224))  # светло-жёлтый
     draw = ImageDraw.Draw(img)
 
-    # Загружаем шрифт
-    font = load_font(24)
+    title_font = load_font(28)
+    text_font = load_font(22)
 
-    # Печатаем текст
-    draw.text((20, 20), text, font=font, fill="black")
+    draw.text((20, 20), "Коды валют", font=title_font, fill="black")
 
-    # Сохраняем в буфер
+    y = 80
+    for code, name, iso in CURRENCY_CODES:
+        flag_path = os.path.join(FLAGS_DIR, f"{iso}.png")
+        if os.path.exists(flag_path):
+            try:
+                flag = Image.open(flag_path).convert("RGBA")
+                flag = flag.resize((40, 30))
+                img.paste(flag, (40, y), flag)
+            except Exception as e:
+                print(f"⚠️ Ошибка при загрузке флага {iso}: {e}")
+
+        draw.text((100, y), f"{code} — {name}", font=text_font, fill="black")
+        y += row_height
+
     bio = BytesIO()
     bio.name = "codes.png"
     img.save(bio, "PNG")
     bio.seek(0)
 
-    # Отправляем пользователю
-    await update.message.reply_photo(photo=bio, caption="Коды валют")
+    await update.message.reply_photo(photo=bio, caption="📋 Список валютных кодов")
