@@ -15,17 +15,12 @@ RUN apt-get update && apt-get install -y \
     libxrandr2 libxrender1 libxss1 libxtst6 xdg-utils \
     && rm -rf /var/lib/apt/lists/*
 
-# Устанавливаем Python-библиотеки
-RUN pip install --no-cache-dir \
-    python-telegram-bot==20.* \
-    selenium \
-    pillow \
-    instaloader \
-    requests \
-    python-dotenv
-
-# Копируем проект в контейнер
+# Копируем requirements.txt и устанавливаем Python-зависимости
 WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Копируем весь проект
 COPY . .
 
 # Указываем переменные окружения
