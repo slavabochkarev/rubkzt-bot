@@ -24,12 +24,12 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from codes import codes
-from check_chrome import run_check
+#from check_chrome import run_check
 
 
-async def checkchrome(update, context):
-    result = run_check()
-    await update.message.reply_text(f"```\n{result}\n```", parse_mode="Markdown")
+#async def checkchrome(update, context):
+#    result = run_check()
+#    await update.message.reply_text(f"```\n{result}\n```", parse_mode="Markdown")
 	
 # Глобальный кэш
 cached_data = None
@@ -40,7 +40,7 @@ CACHE_TTL = datetime.timedelta(hours=1)  # Время жизни кэша: 1 ч�
 executor = ThreadPoolExecutor()
 
 def get_rub_kzt_rate():
-    options = Options()
+	options = Options()
     options.add_argument("--headless=new")   # для headless режима
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
@@ -57,7 +57,6 @@ def get_rub_kzt_rate():
     elem = driver.find_element("css selector", "div.YMlKec.fxKbKc")
     rate = elem.text
     driver.quit()
-
     return rate
         
 def try_convert_amount(message: str, data: dict) -> str | None:
@@ -497,6 +496,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def rub_kzt_all(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await course_cb(update, context)
     await kurskz(update, context)
+	await google(update, context)
     await kurskz_almaty(update, context)  
     
 async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -641,9 +641,10 @@ def update_currency_data():
         
 async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        f"Данные ЦБ РФ с www.cbr-xml-daily.ru \n"
-        f"Данные НБ РК с nationalbank.kz \n"
-        f"И данные обменников kurs.kz\n\n"
+        f"Данные ЦБ РФ с www.cbr-xml-daily.ru - /course\n"
+        f"Данные НБ РК с nationalbank.kz - /coursekz \n"
+        f"И данные обменников c kurs.kz - /kurs_oral /kurs_almaty\n\n"
+        f"Или все сразу - /kurs\n\n"
         f"Введите сумму и код валюты (или два кода ) — и вы получите пересчёт по официальному курсу ЦБ РФ (перевод через рубли)\n"
         f"Примеры: '1000 KZT KGS' или '1000 BYN' или '1000'\n"
     	f"Третий параметр по умолчанию RUB, второй по умолчанию KZT\n"
@@ -654,7 +655,7 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def google(update: Update, context: ContextTypes.DEFAULT_TYPE):
     loop = asyncio.get_event_loop()
     rate = await loop.run_in_executor(executor, get_rub_kzt_rate)
-    await update.message.reply_text(f"Текущий курс RUB/KZT: {rate}")
+    await update.message.reply_text(f"Google курс RUB/KZT: {rate}")
     
 async def setup_bot_commands(application):
     await application.bot.set_my_commands([
@@ -734,7 +735,7 @@ async def main():
     app.add_handler(CommandHandler("kurs_almaty", kurskz_detail_almaty))
     app.add_handler(CommandHandler("nbrk", rub_nbrk))
     app.add_handler(CommandHandler("codes", codes))
-    app.add_handler(CommandHandler("checkchrome", checkchrome))	
+    #app.add_handler(CommandHandler("checkchrome", checkchrome))	
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex("коды валют"), codes))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & ~filters.Regex("коды валют"), echo))
 
@@ -742,7 +743,8 @@ async def main():
     # 🕒 Обновление курса каждый час
     app.job_queue.run_repeating(update_currency_data_job, interval=3600, first=0)
     print("🤖 Бот запущен")
-    # 🔔 Автопинг сайта каждые 10 минут, чтобы Render не засыпал
+
+	# 🔔 Автопинг сайта каждые 10 минут, чтобы Render не засыпал
     # первый пинг через 60 секунд (чтобы контейнер успел подняться)
     app.job_queue.run_repeating(ping_self, interval=600, first=60)
     
@@ -757,6 +759,7 @@ if __name__ == "__main__":
     except RuntimeError as e:
         if "cannot close a running event loop" not in str(e).lower():
             raise
+
 
 
 
