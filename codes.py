@@ -3,47 +3,45 @@ from io import BytesIO
 from telegram import Update
 from telegram.ext import ContextTypes
 
-CURRENCY_CODES = [
-    ("BYN", "Белорусский рубль"),
-    ("BZD", "Белизский доллар"),
-    ("CAD", "Канадский доллар"),
-    ("CDF", "Конголезский франк"),
-    ("CNY", "Китайский юань"),
-    ("CZK", "Чешская крона"),
-    ("DKK", "Датская крона"),
-    ("EGP", "Египетский фунт"),
-]
+# ✅ Функция для подгрузки шрифта с поддержкой кириллицы
+def load_font(size=24):
+    font_paths = [
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+        "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",
+    ]
+    for path in font_paths:
+        try:
+            return ImageFont.truetype(path, size)
+        except OSError:
+            continue
+    return ImageFont.load_default()
+
 
 async def codes(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Настройки
-    width, height = 600, 50 + len(CURRENCY_CODES) * 40
-    background_color = (245, 245, 245)  # светло-серый
-    text_color = (20, 20, 20)
+    # Данные для вывода
+    text = """\
+BYN  Белорусский рубль
+BZD  Белизский доллар
+CAD  Канадский доллар
+CDF  Конголезский франк
+"""
 
     # Создаём картинку
-    img = Image.new("RGB", (width, height), color=background_color)
+    img = Image.new("RGB", (500, 200), color="white")
     draw = ImageDraw.Draw(img)
 
-    # Шрифт (лучше подключить TTF)
-    try:
-        font = ImageFont.truetype("arial.ttf", 24)  # на Render может не быть arial
-    except:
-        font = ImageFont.load_default()
+    # Загружаем шрифт
+    font = load_font(24)
 
-    # Заголовок
-    draw.text((20, 10), "Коды валют", font=font, fill=text_color)
+    # Печатаем текст
+    draw.text((20, 20), text, font=font, fill="black")
 
-    # Выводим список
-    y = 50
-    for code, name in CURRENCY_CODES:
-        draw.text((40, y), f"{code} — {name}", font=font, fill=text_color)
-        y += 35
-
-    # Сохраняем в память
+    # Сохраняем в буфер
     bio = BytesIO()
     bio.name = "codes.png"
     img.save(bio, "PNG")
     bio.seek(0)
 
-    # Отправляем картинку пользователю
-    await update.message.reply_photo(photo=bio)
+    # Отправляем пользователю
+    await update.message.reply_photo(photo=bio, caption="Коды валют")
