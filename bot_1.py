@@ -40,7 +40,7 @@ CACHE_TTL = datetime.timedelta(hours=1)  # Время жизни кэша: 1 ч�
 executor = ThreadPoolExecutor()
 
 def get_rub_kzt_rate():
-	options = Options()
+    options = Options()
     options.add_argument("--headless=new")   # для headless режима
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
@@ -679,36 +679,33 @@ async def update_currency_data_job(context: ContextTypes.DEFAULT_TYPE):
     global ADMIN_CHAT_ID
     print(f"⏰ update_currency_data_job вызван в {datetime.datetime.now()}")
     update_currency_data()
-    #if ADMIN_CHAT_ID:        await context.bot.send_message(chat_id=ADMIN_CHAT_ID,text=f"📢 Курс #изменился!{last_updated}")
+    #TEMP!!!  if ADMIN_CHAT_ID:        await context.bot.send_message(chat_id=ADMIN_CHAT_ID,text=f"📢 Курс #изменился!{last_updated}")
     
 # URL для автопинга — лучше задать как переменную окружения в Render (PING_URL),
 # иначе используется дефолт.
-PING_URL = os.environ.get("PING_URL", "https://rubkzt-bot.onrender.com/")
-
-async def ping_self(context: "ContextTypes.DEFAULT_TYPE"):
-    """Пытаемся пинговать сам сайт, чтобы Render не засыпал (вызывается из JobQueue)."""
-    try:
+#PING_URL = os.environ.get("PING_URL", "https://rubkzt-bot.onrender.com/")
+#async def ping_self(context: "ContextTypes.DEFAULT_TYPE"):
+#    """Пытаемся пинговать сам сайт, чтобы Render не засыпал (вызывается из JobQueue)."""
+#    try:
         # Выполняем blocking-запрос в ThreadPool, чтобы не блокировать loop
-        await asyncio.to_thread(requests.get, PING_URL, {"timeout": 10})
-        # если нужно логировать:
-        print(f"Pinged {PING_URL}")
-    except Exception as e:
-        # Не падаем на ошибках пинга — просто залогировать
-        print("Ошибка автопинга:", e)        
+#        await asyncio.to_thread(requests.get, PING_URL, {"timeout": 10})
+#        print(f"Pinged {PING_URL}")
+#    except Exception as e:
+#        print("Ошибка автопинга:", e)        
     
 async def post_init(application):
     print("🤖 Бот запущен")
 
 # 👇 создаём фейковый Flask-сервер
-flask_app = Flask(__name__)
+# flask_app = Flask(__name__)
 
 @flask_app.route('/')
 def index():
     return "🤖 Telegram bot is running"
 
-def run_flask():
-    port = int(os.environ.get("PORT", 10000))
-    flask_app.run(host="0.0.0.0", port=port)
+# def run_flask():
+#    port = int(os.environ.get("PORT", 10000))
+#    flask_app.run(host="0.0.0.0", port=port)
     
 async def main():
     update_currency_data()
@@ -746,27 +743,16 @@ async def main():
 
 	# 🔔 Автопинг сайта каждые 10 минут, чтобы Render не засыпал
     # первый пинг через 60 секунд (чтобы контейнер успел подняться)
-    app.job_queue.run_repeating(ping_self, interval=600, first=60)
+    # app.job_queue.run_repeating(ping_self, interval=600, first=60)
     
     await app.run_polling()
 
 if __name__ == "__main__":
     nest_asyncio.apply()    
     # Фейковый веб-сервер для Render
-    threading.Thread(target=run_flask).start()
+    # threading.Thread(target=run_flask).start()
     try:
         asyncio.run(main())
     except RuntimeError as e:
         if "cannot close a running event loop" not in str(e).lower():
             raise
-
-
-
-
-
-
-
-
-
-
-
