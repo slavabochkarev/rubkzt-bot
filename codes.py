@@ -20,7 +20,7 @@ def load_font(size=20):
 
 # --- валюты + iso код страны (для названия файла PNG) ---
 CURRENCY_CODES = [
-    ("BYN", "Белорусский рубль!", "by"),
+    ("BYN", "Белорусский рубль", "by"),
     ("KGS", "Киргизский сом", "kg"),
     ("KZT", "Казахский тенге", "kz"),
     ("EGP", "Египетский фунт", "eg"),
@@ -37,7 +37,7 @@ FLAGS_DIR = "flags"  # папка с PNG флагами
 
 async def codes(update: Update, context: ContextTypes.DEFAULT_TYPE):
     row_height = 40
-    width, height = 600, row_height * len(CURRENCY_CODES) + 80
+    width, height = 500, row_height * len(CURRENCY_CODES) + 80
 
     img = Image.new("RGB", (width, height), (255, 255, 224))  # светло-жёлтый
     draw = ImageDraw.Draw(img)
@@ -66,4 +66,4 @@ async def codes(update: Update, context: ContextTypes.DEFAULT_TYPE):
     img.save(bio, "PNG")
     bio.seek(0)
 
-    await update.message.reply_photo(photo=bio, caption="Список валют")
+    await update.message.reply_photo(photo=bio)
