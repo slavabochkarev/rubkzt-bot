@@ -4,7 +4,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 # ✅ Функция для подгрузки шрифта с поддержкой кириллицы
-def load_font(size=24):
+def load_font(size=20):
     font_paths = [
         "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
         "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
@@ -22,9 +22,16 @@ async def codes(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Данные для вывода
     text = """\
 BYN  Белорусский рубль
-BZD  Белизский доллар
-CAD  Канадский доллар
-CDF  Конголезский франк
+KGS  Киргизкий сом
+KZT  Казахский тенге
+EGP  Египетский фунт
+AED  Дирхам (ОАЭ)
+TRY  Турецкая лира
+CNY  Юань
+UZS  Узбекский сум
+INR  Индийская рупия
+DKK  Датская крона
+
 """
 
     # Создаём картинку
