@@ -708,6 +708,7 @@ def index():
 #    flask_app.run(host="0.0.0.0", port=port)
     
 async def main():
+	print("🤖 Start")
     update_currency_data()
 
     load_dotenv()
@@ -751,3 +752,4 @@ async def main():
         loop = asyncio.get_event_loop()
         loop.create_task(main())
         loop.run_forever()
+
