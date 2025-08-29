@@ -35,16 +35,17 @@ executor = ThreadPoolExecutor()
 
 def get_rub_kzt_rate():
     options = Options()
-    options.add_argument("--headless=new")
+    options.add_argument("--headless=new")   # для headless режима
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
 
-    # ВАЖНО: путь к бинарнику Chrome на Render
-    options.binary_location = "/usr/bin/google-chrome-stable"
+    # Указываем путь к chromium
+    options.binary_location = "/usr/bin/chromium"
 
-    service = Service(ChromeDriverManager().install())
+    # chromedriver из apt
+    service = Service("/usr/bin/chromedriver")
+
     driver = webdriver.Chrome(service=service, options=options)
-
     driver.get("https://www.google.com/finance/quote/RUB-KZT")
 
     elem = driver.find_element("css selector", "div.YMlKec.fxKbKc")
@@ -52,7 +53,6 @@ def get_rub_kzt_rate():
     driver.quit()
 
     return rate
-
         
 def try_convert_amount(message: str, data: dict) -> str | None:
     """Пробует распознать сообщение '<amount> <currency1> [currency2]' и умножить на курс ЦБ РФ."""    
@@ -749,6 +749,7 @@ if __name__ == "__main__":
     except RuntimeError as e:
         if "cannot close a running event loop" not in str(e).lower():
             raise
+
 
 
 
