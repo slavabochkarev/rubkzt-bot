@@ -733,8 +733,8 @@ async def main():
 
     app = ApplicationBuilder().token(TOKEN).build()
     await setup_bot_commands(app)
-
-    pattern_code = r"(коды|валюты|rjls)"
+    
+    pattern_code = re.compile(r"коды|валюты|rjls", re.IGNORECASE)
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("usd", usd))
     app.add_handler(CommandHandler("eur", eur))
@@ -751,7 +751,7 @@ async def main():
     app.add_handler(CommandHandler("codes", codes))
     #app.add_handler(CommandHandler("checkchrome", checkchrome))	
     #app.add_handler(MessageHandler(filters.TEXT & filters.Regex("коды валют"), codes))
-    app.add_handler(MessageHandler(filters.TEXT & filters.Regex(pattern_code, flags=re.IGNORECASE),codes))
+    app.add_handler(MessageHandler(filters.TEXT & filters.Regex(pattern_code), codes))
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex("статистика"), stat_activ))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & ~filters.Regex("коды валют"), echo))
 
@@ -776,6 +776,7 @@ if __name__ == "__main__":
     except RuntimeError as e:
         if "cannot close a running event loop" not in str(e).lower():
             raise
+
 
 
 
