@@ -26,8 +26,17 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from codes import codes
+from query_module import execute_sql
+from m_to_image import matrix_to_image
 #from check_chrome import run_check
 
+get_user_act_query = """
+select u.username, count(a.*) as actions_count
+from activity_log a
+join users u on a.user_id = u.id
+group by u.username
+order by actions_count desc;
+"""
 
 #async def checkchrome(update, context):
 #    result = run_check()
@@ -640,14 +649,17 @@ def update_currency_data():
     except Exception as e:
         print("❌ Ошибка при получении данных с kurs.kz:", e)
 
-        
+async def stat_activ(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    matrix = execute_sql(get_user_act_query)
+    await matrix_to_image(update, context, matrix, title="Активность пользователей")
+
 async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        f"Данные ЦБ РФ с cbr-xml-daily.ru - /course\n"
-        f"Данные НБ РК с nationalbank.kz - /coursekz \n"
-        f"И данные обменников c kurs.kz - /kurs_oral /kurs_almaty\n"
+        f"Данные ЦБ РФ - /course\n"
+        f"Данные НБ РК - /coursekz \n"
+        f"И данные обменников - /kurs_oral /kurs_almaty\n"
 		f"Курс GOOGLE - /google\n\n"
-        f"Или все сразу - /kurs\n\n"
+        f"Или все сразу - /kurs\n"
         f"Введите сумму и код валюты (или два кода ) — и вы получите пересчёт по официальному курсу ЦБ РФ (перевод через рубли)\n"
         f"Примеры: '1000 KZT KGS' или '1000 BYN' или '1000'\n"
     	f"Третий параметр по умолчанию RUB, второй по умолчанию KZT\n"
@@ -738,6 +750,7 @@ async def main():
     app.add_handler(CommandHandler("codes", codes))
     #app.add_handler(CommandHandler("checkchrome", checkchrome))	
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex("коды валют"), codes))
+    app.add_handler(MessageHandler(filters.TEXT & filters.Regex("статистика"), stat_activ))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & ~filters.Regex("коды валют"), echo))
 
 
@@ -761,5 +774,6 @@ if __name__ == "__main__":
     except RuntimeError as e:
         if "cannot close a running event loop" not in str(e).lower():
             raise
+
 
 
