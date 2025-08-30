@@ -645,7 +645,7 @@ def update_currency_data():
 async def stat_activ(update: Update, context: ContextTypes.DEFAULT_TYPE):
     matrix = get_user_activity()
     await matrix_to_image(update, context, matrix, title="Активность пользователей")
-	await matrix_to_pie_chart(update, context, matrix, title="Активность пользователей")
+    await matrix_to_pie_chart(update, context, matrix, title="Активность пользователей")
 
 async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
@@ -770,6 +770,3 @@ if __name__ == "__main__":
     except RuntimeError as e:
         if "cannot close a running event loop" not in str(e).lower():
             raise
-
-
-
