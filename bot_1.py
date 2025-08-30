@@ -27,16 +27,8 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from codes import codes
 from query_module import execute_sql
-from m_to_image import matrix_to_image
+from m_to_image import get_user_activity
 #from check_chrome import run_check
-
-get_user_act_query = """
-select u.username, count(a.*) as actions_count
-from activity_log a
-join users u on a.user_id = u.id
-group by u.username
-order by actions_count desc;
-"""
 
 #async def checkchrome(update, context):
 #    result = run_check()
@@ -650,7 +642,7 @@ def update_currency_data():
         print("❌ Ошибка при получении данных с kurs.kz:", e)
 
 async def stat_activ(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    matrix = execute_sql(get_user_act_query)
+    matrix = get_user_activity()
     await matrix_to_image(update, context, matrix, title="Активность пользователей")
 
 async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -776,10 +768,3 @@ if __name__ == "__main__":
     except RuntimeError as e:
         if "cannot close a running event loop" not in str(e).lower():
             raise
-
-
-
-
-
-
-
