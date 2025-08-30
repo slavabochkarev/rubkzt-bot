@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")  # Service role key
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
 HEADERS = {
     "apikey": SUPABASE_KEY,
@@ -13,23 +13,23 @@ HEADERS = {
     "Content-Type": "application/json"
 }
 
-def execute_sql(query):
+def get_user_activity():
     try:
-        url = f"{SUPABASE_URL}/rest/v1/rpc/exec_query"
-        payload = {"sql_text": query}
-        r = requests.post(url, headers=HEADERS, json=payload)
+        url = f"{SUPABASE_URL}/rest/v1/user_activity"
+        params = {"select": "*"}  # выбрать все колонки
+        r = requests.get(url, headers=HEADERS, params=params)
         r.raise_for_status()
         data = r.json()
 
         if not data:
             return []
 
-        keys = list(data[0].keys())
-        matrix = [keys]  # заголовки
+        matrix = [["username", "actions_count"]]
         for row in data:
-            matrix.append([row[key] for key in keys])
+            matrix.append([row["username"], row["actions_count"]])
+
         return matrix
 
     except Exception as e:
-        print(f"❌ Ошибка выполнения запроса: {e}")
+        print(f"❌ Ошибка выборки user_activity: {e}")
         return []
