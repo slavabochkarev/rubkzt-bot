@@ -118,28 +118,47 @@ async def matrix_to_pie_chart(update: Update, context: ContextTypes.DEFAULT_TYPE
 
     await update.message.reply_photo(photo=bio)
 
+import plotly.graph_objects as go
+from io import BytesIO
+
 async def matrix_to_pie_chart_3d(update, context, matrix, title="3D Диаграмма"):
+    """
+    Строит "3D"-круговую диаграмму (эффект пончика) с помощью Plotly и отправляет в Telegram.
+    - matrix: [['username', 'actions_count'], ['user1', 10], ...]
+    """
     if not matrix or len(matrix) <= 1:
         await update.message.reply_text("Нет данных для отображения.")
         return
 
-    labels = [row[0] for row in matrix[1:]]
+    # Данные (пропускаем заголовок)
+    labels = [str(row[0]) for row in matrix[1:]]
     values = [row[1] for row in matrix[1:]]
 
+    if not labels or not values:
+        await update.message.reply_text("Недостаточно данных для диаграммы.")
+        return
+
+    # Создаём фигуру
     fig = go.Figure(data=[go.Pie(
         labels=labels,
         values=values,
-        hole=0.3,          # делаем "пончик"
-        pull=[0.05]*len(labels)  # чуть выдвигаем сегменты
+        hole=0.4,                # пончик
+        pull=[0.05]*len(labels), # лёгкий вынос секторов
     )])
+
+    fig.update_traces(textinfo='percent+label')  # проценты + подписи
     fig.update_layout(title_text=title)
 
-    # Сохраняем картинку
+    # Сохраняем картинку в память
     bio = BytesIO()
-    bio.name = "chart3d.png"
-    fig.write_image(bio, format="png")
+    try:
+        fig.write_image(bio, format="png", engine="kaleido")
+    except Exception as e:
+        await update.message.reply_text(f"⚠️ Ошибка при создании диаграммы: {e}")
+        return
+
     bio.seek(0)
+    bio.name = "chart3d.png"
 
+    # Отправляем в чат
     await update.message.reply_photo(photo=bio)
-
-
