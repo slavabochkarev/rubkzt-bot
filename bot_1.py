@@ -734,7 +734,7 @@ async def main():
     app = ApplicationBuilder().token(TOKEN).build()
     await setup_bot_commands(app)
 
-	pattern_code = r"(коды|валюты|rjls)"
+    pattern_code = r"(коды|валюты|rjls)"
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("usd", usd))
     app.add_handler(CommandHandler("eur", eur))
@@ -776,6 +776,7 @@ if __name__ == "__main__":
     except RuntimeError as e:
         if "cannot close a running event loop" not in str(e).lower():
             raise
+
 
 
 
