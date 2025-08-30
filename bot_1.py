@@ -26,7 +26,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from codes import codes
-from query_module import execute_sql
+from query_module import get_user_activity
 from m_to_image import get_user_activity
 #from check_chrome import run_check
 
@@ -768,3 +768,4 @@ if __name__ == "__main__":
     except RuntimeError as e:
         if "cannot close a running event loop" not in str(e).lower():
             raise
+
