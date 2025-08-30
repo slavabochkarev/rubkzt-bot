@@ -2,6 +2,7 @@ from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 from telegram import Update
 from telegram.ext import ContextTypes
+import matplotlib.pyplot as plt
 
 def load_font(size=20):
     font_paths = [
@@ -85,3 +86,34 @@ async def matrix_to_image(update: Update, context: ContextTypes.DEFAULT_TYPE, ma
     bio.seek(0)
 
     await update.message.reply_photo(photo=bio)
+
+async def matrix_to_pie_chart(update: Update, context: ContextTypes.DEFAULT_TYPE, matrix, title="Диаграмма"):
+    """
+    Строит круговую диаграмму по данным из матрицы и отправляет в Telegram.
+    Ожидается, что в матрице:
+    - первая строка: ['username', 'actions_count']
+    - остальные строки: ['имя', число]
+    """
+    if not matrix or len(matrix) <= 1:
+        await update.message.reply_text("Нет данных для отображения.")
+        return
+
+    # Берём данные (пропускаем заголовок)
+    labels = [row[0] for row in matrix[1:]]
+    values = [row[1] for row in matrix[1:]]
+
+    # Создаём диаграмму
+    fig, ax = plt.subplots(figsize=(6, 6))
+    ax.pie(values, labels=labels, autopct='%1.1f%%', startangle=90, counterclock=False)
+    ax.set_title(title)
+
+    # Сохраняем в память
+    bio = BytesIO()
+    bio.name = "chart.png"
+    plt.savefig(bio, format="png", bbox_inches="tight")
+    plt.close(fig)
+    bio.seek(0)
+
+    await update.message.reply_photo(photo=bio)
+
+
