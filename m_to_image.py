@@ -18,12 +18,6 @@ def load_font(size=20):
 
 
 async def matrix_to_image(update: Update, context: ContextTypes.DEFAULT_TYPE, matrix, title="Таблица"):
-    """
-    Отображает матрицу в виде изображения и отправляет в Telegram.
-    
-    :param matrix: список списков, первая строка — заголовки
-    :param title: заголовок таблицы
-    """
     if not matrix:
         await update.message.reply_text("Нет данных для отображения.")
         return
@@ -39,8 +33,8 @@ async def matrix_to_image(update: Update, context: ContextTypes.DEFAULT_TYPE, ma
     img = Image.new("RGB", (width, height), (255, 255, 224))  # светло-жёлтый фон
     draw = ImageDraw.Draw(img)
 
-    title_font = load_font(28)
-    text_font = load_font(22)
+    title_font = load_font(24)
+    text_font = load_font(20)
 
     draw.text((padding, 10), title, font=title_font, fill="black")
 
