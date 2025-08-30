@@ -28,6 +28,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from codes import codes
 from query_module import get_user_activity
 from m_to_image import matrix_to_image
+from m_to_image import matrix_to_pie_chart
 #from check_chrome import run_check
 
 #async def checkchrome(update, context):
@@ -644,6 +645,7 @@ def update_currency_data():
 async def stat_activ(update: Update, context: ContextTypes.DEFAULT_TYPE):
     matrix = get_user_activity()
     await matrix_to_image(update, context, matrix, title="Активность пользователей")
+	await matrix_to_pie_chart(update, context, matrix, title="Активность пользователей")
 
 async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
@@ -768,5 +770,6 @@ if __name__ == "__main__":
     except RuntimeError as e:
         if "cannot close a running event loop" not in str(e).lower():
             raise
+
 
 
