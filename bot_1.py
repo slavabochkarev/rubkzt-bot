@@ -27,7 +27,7 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from codes import codes
 from query_module import get_user_activity
-from m_to_image import get_user_activity
+from m_to_image import matrix_to_image
 #from check_chrome import run_check
 
 #async def checkchrome(update, context):
@@ -768,4 +768,5 @@ if __name__ == "__main__":
     except RuntimeError as e:
         if "cannot close a running event loop" not in str(e).lower():
             raise
+
 
