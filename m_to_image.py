@@ -72,6 +72,7 @@ async def matrix_to_image(update: Update, context: ContextTypes.DEFAULT_TYPE, ma
 
             x += col_width
 
+        draw.line([(width - padding, y), (width - padding, y + row_height)], fill="black", width=1)
         # Горизонтальная граница
         draw.line([(padding, y), (width - padding, y)], fill="black", width=1)
 
