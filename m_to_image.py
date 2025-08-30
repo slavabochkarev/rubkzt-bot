@@ -25,26 +25,59 @@ async def matrix_to_image(update: Update, context: ContextTypes.DEFAULT_TYPE, ma
     row_height = 40
     padding = 20
     num_columns = len(matrix[0])
-    col_widths = [max([len(str(row[i])) for row in matrix]) * 12 for i in range(num_columns)]
+    col_widths = [max([len(str(row[i])) for row in matrix]) * 12 + 20 for i in range(num_columns)]
 
     width = sum(col_widths) + padding * 2
-    height = row_height * len(matrix) + row_height + padding
+    height = row_height * len(matrix) + row_height + padding * 2
 
     img = Image.new("RGB", (width, height), (255, 255, 224))  # светло-жёлтый фон
     draw = ImageDraw.Draw(img)
 
     title_font = load_font(24)
-    text_font = load_font(20)
+    header_font = load_font(20)
+    text_font = load_font(18)
 
+    # Заголовок таблицы
     draw.text((padding, 10), title, font=title_font, fill="black")
 
-    y = row_height + 10
+    y = row_height + 20
     for row_idx, row in enumerate(matrix):
         x = padding
+
+        # Заливка строки
+        if row_idx == 0:  # заголовок
+            row_color = (200, 200, 200)  # серый фон
+            font = header_font
+        elif row_idx % 2 == 0:
+            row_color = (245, 245, 245)  # светло-серый для четных строк
+            font = text_font
+        else:
+            row_color = (255, 255, 255)  # белый фон
+            font = text_font
+
+        # Фон строки
+        draw.rectangle([padding, y, width - padding, y + row_height], fill=row_color)
+
+        # Текст + границы
         for col_idx, cell in enumerate(row):
-            draw.text((x, y), str(cell), font=text_font, fill="black")
-            x += col_widths[col_idx]
+            cell_text = str(cell)
+            col_width = col_widths[col_idx]
+
+            # Рисуем текст по центру ячейки
+            draw.text((x + 5, y + 10), cell_text, font=font, fill="black")
+
+            # Вертикальная граница
+            draw.line([(x, y), (x, y + row_height)], fill="black", width=1)
+
+            x += col_width
+
+        # Горизонтальная граница
+        draw.line([(padding, y), (width - padding, y)], fill="black", width=1)
+
         y += row_height
+
+    # Нижняя граница
+    draw.line([(padding, y), (width - padding, y)], fill="black", width=1)
 
     bio = BytesIO()
     bio.name = "matrix.png"
