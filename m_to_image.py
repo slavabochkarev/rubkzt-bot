@@ -3,6 +3,7 @@ from io import BytesIO
 from telegram import Update
 from telegram.ext import ContextTypes
 import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 
 def load_font(size=20):
     font_paths = [
@@ -113,6 +114,30 @@ async def matrix_to_pie_chart(update: Update, context: ContextTypes.DEFAULT_TYPE
     bio.name = "chart.png"
     plt.savefig(bio, format="png", bbox_inches="tight")
     plt.close(fig)
+    bio.seek(0)
+
+    await update.message.reply_photo(photo=bio)
+
+async def matrix_to_pie_chart_3d(update, context, matrix, title="3D Диаграмма"):
+    if not matrix or len(matrix) <= 1:
+        await update.message.reply_text("Нет данных для отображения.")
+        return
+
+    labels = [row[0] for row in matrix[1:]]
+    values = [row[1] for row in matrix[1:]]
+
+    fig = go.Figure(data=[go.Pie(
+        labels=labels,
+        values=values,
+        hole=0.3,          # делаем "пончик"
+        pull=[0.05]*len(labels)  # чуть выдвигаем сегменты
+    )])
+    fig.update_layout(title_text=title)
+
+    # Сохраняем картинку
+    bio = BytesIO()
+    bio.name = "chart3d.png"
+    fig.write_image(bio, format="png")
     bio.seek(0)
 
     await update.message.reply_photo(photo=bio)
