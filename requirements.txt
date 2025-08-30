@@ -23,3 +23,5 @@ flask
 selenium
 webdriver-manager
 matplotlib
+plotly
+kaleido
